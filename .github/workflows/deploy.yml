@@ -27,12 +27,16 @@ jobs:
           mkdir -p ~/.oci
           echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
           chmod 600 ~/.oci/oci_api_key.pem
+          USER_OCID="$(echo -n '${{ secrets.OCI_USER_OCID }}' | tr -d '[:space:]')"
+          FINGERPRINT="$(echo -n '${{ secrets.OCI_FINGERPRINT }}' | tr -d '[:space:]')"
+          TENANCY_OCID="$(echo -n '${{ secrets.OCI_TENANCY_OCID }}' | tr -d '[:space:]')"
+          REGION="$(echo -n '${{ secrets.OCI_REGION }}' | tr -d '[:space:]')"
           cat > ~/.oci/config <<EOF
           [DEFAULT]
-          user=${{ secrets.OCI_USER_OCID }}
-          fingerprint=${{ secrets.OCI_FINGERPRINT }}
-          tenancy=${{ secrets.OCI_TENANCY_OCID }}
-          region=${{ secrets.OCI_REGION }}
+          user=${USER_OCID}
+          fingerprint=${FINGERPRINT}
+          tenancy=${TENANCY_OCID}
+          region=${REGION}
           key_file=$HOME/.oci/oci_api_key.pem
           EOF
           chmod 600 ~/.oci/config
@@ -54,18 +58,21 @@ jobs:
 
       - name: Terraform apply
         working-directory: terraform
-        env:
-          TF_VAR_compartment_ocid: ${{ secrets.OCI_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.OCI_REGION }}
-          TF_VAR_ssh_allowed_cidr: "${{ steps.runner_ip.outputs.ip }}/32"
-          TF_VAR_youtube_stream_key: ${{ secrets.YOUTUBE_STREAM_KEY }}
-          TF_VAR_youtube_stream_id: ${{ secrets.YOUTUBE_STREAM_ID }}
-          TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
-          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TF_VAR_google_refresh_token: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: |
+          # Nettoie tout espace/retour à la ligne accidentel dans les secrets
+          # (cause fréquente de résultats vides silencieux côté API OCI).
+          export TF_VAR_compartment_ocid="$(echo -n '${{ secrets.OCI_TENANCY_OCID }}' | tr -d '[:space:]')"
+          export TF_VAR_region="$(echo -n '${{ secrets.OCI_REGION }}' | tr -d '[:space:]')"
+          export TF_VAR_ssh_allowed_cidr="${{ steps.runner_ip.outputs.ip }}/32"
+          export TF_VAR_youtube_stream_key='${{ secrets.YOUTUBE_STREAM_KEY }}'
+          export TF_VAR_youtube_stream_id='${{ secrets.YOUTUBE_STREAM_ID }}'
+          export TF_VAR_google_client_id='${{ secrets.GOOGLE_CLIENT_ID }}'
+          export TF_VAR_google_client_secret='${{ secrets.GOOGLE_CLIENT_SECRET }}'
+          export TF_VAR_google_refresh_token='${{ secrets.GOOGLE_REFRESH_TOKEN }}'
           export TF_VAR_ssh_public_key_path="$HOME/.ssh/id_ed25519.pub"
           export TF_VAR_ssh_private_key_path="$HOME/.ssh/id_ed25519"
+          echo "compartment_ocid utilisé (longueur): ${#TF_VAR_compartment_ocid}"
+          echo "region utilisée: $TF_VAR_region"
           terraform apply -auto-approve
 
       - name: IP publique du VPS
