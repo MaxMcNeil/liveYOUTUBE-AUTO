@@ -18,8 +18,8 @@ cd "$(dirname "$0")"
 : "${YOUTUBE_STREAM_KEY:?Il faut définir YOUTUBE_STREAM_KEY dans l'environnement}"
 
 DISPLAY_NUM=":99"
-RESOLUTION="1280x720"
-FRAMERATE=24
+RESOLUTION="1920x1080"
+FRAMERATE=30
 INITIAL_URL="https://maxmcneil.github.io/dls-monitor/"
 
 PRIMARY_RTMP="rtmp://x.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}"
@@ -69,9 +69,9 @@ echo "Démarrage de ffmpeg (capture + push simultané vers flux principal et sec
 ffmpeg -hide_banner -loglevel warning \
   -f x11grab -video_size "$RESOLUTION" -framerate "$FRAMERATE" -i "$DISPLAY_NUM" \
   -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 \
-  -c:v libx264 -preset ultrafast -tune zerolatency -b:v 2000k -maxrate 2000k -bufsize 4000k \
+  -c:v libx264 -preset veryfast -tune zerolatency -b:v 4500k -maxrate 4500k -bufsize 9000k \
   -pix_fmt yuv420p -g $((FRAMERATE * 2)) \
-  -c:a aac -b:a 96k -ar 44100 \
+  -c:a aac -b:a 128k -ar 44100 \
   -f tee -map 0:v -map 1:a \
   "[f=flv]${PRIMARY_RTMP}|[f=flv]${BACKUP_RTMP}" &
 FFMPEG_PID=$!
