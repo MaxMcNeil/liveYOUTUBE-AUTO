@@ -1,0 +1,55 @@
+name: Autorisation Google (une seule fois)
+
+# Étape unique et manuelle, inévitable côté Google : après avoir ouvert
+# l'URL d'autorisation dans un navigateur (voir README.md) et accepté
+# les permissions, vous êtes redirigé vers une URL qui échoue à charger
+# mais qui contient "?code=XXXX" dans la barre d'adresse. Copiez cette
+# valeur et lancez ce workflow avec (onglet Actions > ce workflow >
+# Run workflow).
+#
+# Ce workflow échange le code contre un refresh_token permanent et
+# l'enregistre lui-même comme secret GOOGLE_REFRESH_TOKEN du repo :
+# tous les lancements suivants de deploy.yml l'utilisent automatiquement,
+# pour toujours, sans repasser par cette étape.
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "Code d'autorisation copié depuis l'URL de redirection"
+        required: true
+
+jobs:
+  exchange:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Échanger le code contre un refresh token
+        id: exchange
+        run: |
+          RESPONSE=$(curl -s -X POST https://oauth2.googleapis.com/token \
+            -d client_id="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            -d client_secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            -d code="${{ github.event.inputs.code }}" \
+            -d grant_type=authorization_code \
+            -d redirect_uri="http://localhost:53682/oauth2callback")
+
+          REFRESH_TOKEN=$(echo "$RESPONSE" | jq -r '.refresh_token // empty')
+
+          if [ -z "$REFRESH_TOKEN" ]; then
+            echo "::error::Échec de l'échange du code. Réponse de Google : $RESPONSE"
+            echo "Vérifiez que le code n'a pas déjà été utilisé (il n'est valable qu'une fois) et qu'il a été copié en entier."
+            exit 1
+          fi
+
+          echo "::add-mask::$REFRESH_TOKEN"
+          echo "refresh_token=$REFRESH_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Enregistrer GOOGLE_REFRESH_TOKEN comme secret du repo
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh secret set GOOGLE_REFRESH_TOKEN \
+            --repo "${{ github.repository }}" \
+            --body "${{ steps.exchange.outputs.refresh_token }}"
+
+      - name: Confirmation
+        run: echo "GOOGLE_REFRESH_TOKEN enregistré. Relancez le workflow 'Déployer le livestream' pour activer l'automatisation YouTube."
