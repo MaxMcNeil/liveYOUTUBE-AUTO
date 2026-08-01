@@ -24,18 +24,6 @@ variable "ssh_allowed_cidr" {
   type        = string
 }
 
-variable "instance_ocpus" {
-  description = "Nombre d'OCPU (ARM Ampere A1 — jusqu'à 4 OCPU/24 Go gratuits en Always Free)"
-  type        = number
-  default     = 2
-}
-
-variable "instance_memory_gb" {
-  description = "Mémoire en Go"
-  type        = number
-  default     = 12
-}
-
 variable "youtube_stream_key" {
   description = "Clé de stream YouTube (rtmp), depuis YouTube Studio > Diffuser en direct"
   type        = string
