@@ -1,0 +1,11 @@
+[Unit]
+Description=Déclenche la création du broadcast YouTube avant chaque fenêtre de live
+
+[Timer]
+OnCalendar=*-*-* 06:55:00
+OnCalendar=*-*-* 18:55:00
+Persistent=false
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

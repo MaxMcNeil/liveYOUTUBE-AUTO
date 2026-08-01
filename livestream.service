@@ -1,0 +1,18 @@
+[Unit]
+Description=Pipeline de livestream YouTube autonome
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/livestream
+EnvironmentFile=/opt/livestream/.env
+ExecStart=/opt/livestream/start_stream.sh
+Restart=on-failure
+RestartSec=15
+# Le pipeline gère lui-même son arrêt propre via SIGTERM (voir start_stream.sh)
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+[Unit]
+Description=Arrête le livestream (déclenché par livestream-stop.timer)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl stop livestream.service

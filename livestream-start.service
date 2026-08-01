@@ -1,0 +1,6 @@
+[Unit]
+Description=Démarre le livestream (déclenché par livestream-start.timer)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl start livestream.service
