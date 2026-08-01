@@ -22,7 +22,7 @@ data "oci_identity_availability_domains" "ads" {
 data "oci_core_images" "ubuntu" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
-  shape                    = "VM.Standard.E2.1.Micro"
+  shape                    = var.instance_shape
   sort_by                  = "TIMECREATED"
   sort_order                = "DESC"
 }
@@ -82,11 +82,23 @@ resource "oci_core_subnet" "subnet" {
   prohibit_public_ip_on_vnic = false
 }
 
+locals {
+  is_flex_shape = can(regex("Flex$", var.instance_shape))
+}
+
 resource "oci_core_instance" "livestream_vm" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   display_name        = "livestream-vps"
-  shape                = "VM.Standard.E2.1.Micro"
+  shape                = var.instance_shape
+
+  dynamic "shape_config" {
+    for_each = local.is_flex_shape ? [1] : []
+    content {
+      ocpus         = var.instance_ocpus
+      memory_in_gbs = var.instance_memory_gb
+    }
+  }
 
   create_vnic_details {
     subnet_id        = oci_core_subnet.subnet.id

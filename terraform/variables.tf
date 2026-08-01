@@ -24,6 +24,24 @@ variable "ssh_allowed_cidr" {
   type        = string
 }
 
+variable "instance_shape" {
+  description = "Shape de l'instance. Confirmé disponible par le support Oracle : VM.Standard.A1.Flex, 2 OCPU (Always Free). Alternative si indisponible : VM.Standard.E2.1.Micro (fixe, pas de shape_config) ou un shape payant comme VM.Standard.E4.Flex."
+  type        = string
+  default     = "VM.Standard.A1.Flex"
+}
+
+variable "instance_ocpus" {
+  description = "OCPU — utilisé uniquement si instance_shape est un shape *.Flex"
+  type        = number
+  default     = 2
+}
+
+variable "instance_memory_gb" {
+  description = "Mémoire en Go — utilisé uniquement si instance_shape est un shape *.Flex"
+  type        = number
+  default     = 12
+}
+
 variable "youtube_stream_key" {
   description = "Clé de stream YouTube (rtmp), depuis YouTube Studio > Diffuser en direct"
   type        = string
