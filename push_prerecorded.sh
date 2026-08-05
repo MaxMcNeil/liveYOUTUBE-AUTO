@@ -53,7 +53,7 @@ ffmpeg -hide_banner -loglevel warning \
   "${INPUT_ARGS[@]}" \
   -filter_complex "$FILTER" \
   -map "[outv]" -map "[outa]" \
-  -c:v libx264 -preset veryfast -tune zerolatency -b:v 4500k -maxrate 4500k -bufsize 9000k \
+  -c:v libx264 -preset ultrafast -tune zerolatency -b:v 4000k -maxrate 4000k -bufsize 8000k \
   -pix_fmt yuv420p -g $((TARGET_FPS * 2)) \
   -c:a aac -b:a 128k -ar 44100 \
   -f tee \
