@@ -1,0 +1,80 @@
+name: Déployer le livestream
+
+# Se lance à la demande depuis l'onglet Actions de GitHub (bouton
+# "Run workflow"). Ce workflow ne fait tourner le live : il provisionne
+# le VPS et y installe le pipeline (Xvfb, Chromium, ffmpeg, systemd
+# timers). Une fois terminé, le live tourne en continu SUR LE VPS,
+# indépendamment de GitHub Actions — inutile de relancer ce workflow
+# à chaque diffusion, seulement quand vous voulez créer/mettre à jour
+# l'infrastructure.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Préparer la clé API OCI
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          USER_OCID="$(echo -n '${{ secrets.OCI_USER_OCID }}' | tr -d '[:space:]')"
+          FINGERPRINT="$(echo -n '${{ secrets.OCI_FINGERPRINT }}' | tr -d '[:space:]')"
+          TENANCY_OCID="$(echo -n '${{ secrets.OCI_TENANCY_OCID }}' | tr -d '[:space:]')"
+          REGION="$(echo -n '${{ secrets.OCI_REGION }}' | tr -d '[:space:]')"
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          user=${USER_OCID}
+          fingerprint=${FINGERPRINT}
+          tenancy=${TENANCY_OCID}
+          region=${REGION}
+          key_file=$HOME/.oci/oci_api_key.pem
+          EOF
+          chmod 600 ~/.oci/config
+
+      - name: Préparer la clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+
+      - name: Détecter l'IP publique du runner (pour autoriser le SSH temporairement)
+        id: runner_ip
+        run: echo "ip=$(curl -s https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: terraform
+        run: |
+          # Nettoie tout espace/retour à la ligne accidentel dans les secrets
+          # (cause fréquente de résultats vides silencieux côté API OCI).
+          export TF_VAR_compartment_ocid="$(echo -n '${{ secrets.OCI_TENANCY_OCID }}' | tr -d '[:space:]')"
+          export TF_VAR_region="$(echo -n '${{ secrets.OCI_REGION }}' | tr -d '[:space:]')"
+          export TF_VAR_ssh_allowed_cidr="${{ steps.runner_ip.outputs.ip }}/32"
+          export TF_VAR_youtube_stream_key='${{ secrets.YOUTUBE_STREAM_KEY }}'
+          export TF_VAR_youtube_stream_id='${{ secrets.YOUTUBE_STREAM_ID }}'
+          export TF_VAR_google_client_id='${{ secrets.GOOGLE_CLIENT_ID }}'
+          export TF_VAR_google_client_secret='${{ secrets.GOOGLE_CLIENT_SECRET }}'
+          export TF_VAR_google_refresh_token='${{ secrets.GOOGLE_REFRESH_TOKEN }}'
+          export TF_VAR_ssh_public_key_path="$HOME/.ssh/id_ed25519.pub"
+          export TF_VAR_ssh_private_key_path="$HOME/.ssh/id_ed25519"
+          echo "compartment_ocid utilisé (longueur): ${#TF_VAR_compartment_ocid}"
+          echo "region utilisée: $TF_VAR_region"
+          terraform apply -auto-approve
+
+      - name: IP publique du VPS
+        working-directory: terraform
+        run: terraform output -raw public_ip
