@@ -1,0 +1,12 @@
+{
+  "name": "livestream-orchestrator",
+  "version": "1.0.0",
+  "description": "Rotation automatique de sites web pour livestream YouTube 24/7",
+  "private": true,
+  "dependencies": {
+    "playwright": "^1.47.0",
+    "googleapis": "^144.0.0",
+    "dotenv": "^16.4.5",
+    "yaml": "^2.5.0"
+  }
+}

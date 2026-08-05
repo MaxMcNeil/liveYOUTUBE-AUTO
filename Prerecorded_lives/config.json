@@ -1,0 +1,33 @@
+{
+  "viewport": { "width": 1920, "height": 1080 },
+  "sites": [
+    {
+      "name": "dls-monitor",
+      "url": "https://maxmcneil.github.io/dls-monitor/",
+      "signatureSelector": "body",
+      "minLoopMs": 180000,
+      "maxLoopMs": 180000,
+      "sampleIntervalMs": 5000,
+      "stableRepeatsToConfirm": 1
+    },
+    {
+      "name": "FranceLiveNews",
+      "url": "https://maxmcneil.github.io/FranceLiveNews/",
+      "signatureSelector": "body",
+      "minLoopMs": 180000,
+      "maxLoopMs": 180000,
+      "sampleIntervalMs": 5000,
+      "stableRepeatsToConfirm": 1
+    },
+    {
+      "name": "slideshow",
+      "url": "https://maxmcneil.github.io/slideshow/",
+      "signatureSelector": "body",
+      "minLoopMs": 180000,
+      "maxLoopMs": 180000,
+      "sampleIntervalMs": 5000,
+      "stableRepeatsToConfirm": 1
+    }
+  ],
+  "controlFile": "/tmp/livestream_control.json"
+}
