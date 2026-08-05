@@ -1,8 +1,0 @@
-[Unit]
-Description=Crée le broadcast YouTube du jour (titre daté + description)
-
-[Service]
-Type=oneshot
-WorkingDirectory=/opt/livestream
-EnvironmentFile=/opt/livestream/.env
-ExecStart=/usr/bin/node /opt/livestream/create_daily_broadcast.js
