@@ -1,0 +1,18 @@
+# Copiez ce fichier en terraform.tfvars et remplissez-le LOCALEMENT.
+# Ne partagez jamais terraform.tfvars (il contient des secrets) — il
+# est déjà exclu par .gitignore si vous versionnez ce dossier.
+
+compartment_ocid      = "ocid1.tenancy.oc1..VOTRE_TENANCY_OCID"  # compartiment racine = OCID du tenancy
+region                 = "eu-turin-1"
+ssh_public_key_path   = "~/.ssh/id_ed25519.pub"
+ssh_private_key_path  = "~/.ssh/id_ed25519"
+ssh_allowed_cidr      = "VOTRE.IP.PUBLIQUE/32"
+
+youtube_stream_key    = "votre-cle-de-stream-youtube"
+
+# Optionnel — automatisation du titre/description quotidiens (laisser
+# vide pour désactiver, voir README.md section "Automatisation YouTube")
+youtube_stream_id     = ""
+google_client_id      = ""
+google_client_secret  = ""
+google_refresh_token  = ""
