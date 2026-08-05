@@ -1,0 +1,55 @@
+name: Diffusion programmée (sans VPS)
+
+# Horaires calés sur Europe/Paris en heure d'ÉTÉ (UTC+2, valable de
+# fin mars à fin octobre) :
+#   Dimanche 10h-11h Paris → 08:00 UTC
+#   Samedi   20h-21h Paris → 18:00 UTC
+#   Mardi    20h-21h Paris → 18:00 UTC
+#
+# ⚠️ Fin octobre, au passage à l'heure d'HIVER (UTC+1), décalez chaque
+# horaire de +1h (ex: "0 8 * * 0" devient "0 9 * * 0") — sinon la
+# diffusion démarrera avec 1h de décalage par rapport à l'heure locale
+# réelle jusqu'au printemps suivant.
+on:
+  schedule:
+    - cron: "0 8 * * 0"   # Dimanche 10h Paris (été)
+    - cron: "0 18 * * 6"  # Samedi 20h Paris (été)
+    - cron: "0 18 * * 2"  # Mardi 20h Paris (été)
+  workflow_dispatch: {}   # pour tester manuellement à tout moment
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75   # légère marge au-delà de l'heure de diffusion
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y xvfb ffmpeg
+
+      - name: Générer le titre/description du jour (optionnel)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          YOUTUBE_STREAM_ID: ${{ secrets.YOUTUBE_STREAM_ID }}
+          DURATION_SECONDS: "3600"
+        run: node create_broadcast_now.js
+
+      - name: Diffuser (1h, arrêt automatique)
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          DURATION_SECONDS: "3600"
+        run: |
+          chmod +x stream_session.sh
+          ./stream_session.sh
