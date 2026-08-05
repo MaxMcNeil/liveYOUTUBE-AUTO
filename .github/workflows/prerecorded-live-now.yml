@@ -26,6 +26,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
+      - name: Télécharger les vidéos depuis la Release "prerecorded-lives"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p Prerecorded_lives
+          gh release download prerecorded-lives \
+            --repo "${{ github.repository }}" \
+            --dir Prerecorded_lives \
+            --clobber \
+            --pattern "*" || {
+              echo "::error::Aucune release nommée 'prerecorded-lives' trouvée, ou aucune vidéo attachée. Voir Prerecorded_lives/README.md."
+              exit 1
+            }
+
       - name: Générer le titre/description (si "Titre" renseigné)
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
