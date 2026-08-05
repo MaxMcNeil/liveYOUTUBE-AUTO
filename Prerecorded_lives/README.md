@@ -1,8 +1,31 @@
 # Dossier Prerecorded_lives/
 
-Déposez ici une ou plusieurs vidéos (MP4 ou tout autre format lisible
-par ffmpeg) à diffuser en direct sur YouTube au moment où vous lancez
-le workflow **"Prerecorded_Live_Now"**.
+Ce dossier contient uniquement `input_METADATA.txt` (le titre/
+description à utiliser). **Les vidéos elles-mêmes ne se déposent PAS
+ici via git** — GitHub limite les fichiers à 100 Mo par git push (25 Mo
+via l'upload web), bien trop petit pour des vidéos.
+
+## Comment uploader vos vidéos
+
+Utilisez les **GitHub Releases** (jusqu'à 2 Go par fichier, gratuit,
+ne consomme aucun quota) :
+
+1. Sur votre repo GitHub → cliquez sur **Releases** (colonne de droite,
+   ou `https://github.com/VOTRE_USER/VOTRE_REPO/releases`)
+2. **Draft a new release** (ou **Create a new release**)
+3. **Choose a tag** → tapez exactement `prerecorded-lives` → **Create
+   new tag**
+4. **Release title** : ce que vous voulez (ex. "Vidéos du jour")
+5. Faites glisser vos vidéos dans la zone **"Attach binaries by
+   dropping them here"** en bas — c'est cette zone-là qui accepte les
+   gros fichiers, pas l'explorateur de fichiers habituel du repo
+6. **Publish release**
+
+**Pour remplacer les vidéos la fois suivante** : retournez sur cette
+même release (`prerecorded-lives`) → **Edit release** → supprimez les
+anciens fichiers (icône poubelle) → glissez les nouveaux → **Update
+release**. Le workflow prend toujours le contenu actuel de cette
+release au moment où vous le lancez.
 
 ## Règles
 
@@ -23,7 +46,8 @@ le workflow **"Prerecorded_Live_Now"**.
 
 ## Titre et description
 
-Remplissez `input_METADATA.txt` avant de lancer le workflow :
+Remplissez `input_METADATA.txt` (dans ce dossier, directement modifiable
+sur GitHub — icône crayon) avant de lancer le workflow :
 
 ```
 Titre: Mon titre du jour
@@ -37,20 +61,8 @@ peut tenir sur plusieurs lignes.
 - Si **Titre** est rempli → un nouveau live YouTube est créé avec ce
   titre et cette description (la description peut rester vide).
 
-## Attention — taille des fichiers
-
-GitHub refuse les fichiers de plus de 100 Mo poussés normalement avec
-`git push`. Pour des vidéos plus lourdes, utilisez [Git LFS](https://git-lfs.com/) :
-
-```bash
-git lfs install
-git lfs track "Prerecorded_lives/*.mp4"
-git add .gitattributes
-```
-
 ## Attention — minutes GitHub Actions
 
 Le direct pousse les vidéos en temps réel (pas plus vite), donc une
-vidéo de 2h consomme 2h de minutes GitHub Actions. Vérifiez votre
-quota (Settings > Billing) si vous prévoyez des vidéos longues ou
-fréquentes.
+vidéo de 2h consomme 2h de minutes GitHub Actions. Sur un dépôt public
+(votre cas), c'est illimité et gratuit — aucune limite à surveiller.
