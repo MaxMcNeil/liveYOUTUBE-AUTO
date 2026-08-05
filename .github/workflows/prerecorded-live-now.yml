@@ -1,0 +1,42 @@
+name: Prerecorded_Live_Now
+
+# Déclenché manuellement (Actions > Prerecorded_Live_Now > Run
+# workflow), au moment où vous voulez passer les vidéos de
+# Prerecorded_lives/ en direct. Pas de planification automatique —
+# c'est vous qui choisissez l'instant T.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360   # limite haute, la durée réelle dépend de vos vidéos
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        run: |
+          npm install
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Générer le titre/description (si "Titre" renseigné)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          YOUTUBE_STREAM_ID: ${{ secrets.YOUTUBE_STREAM_ID }}
+        run: node create_broadcast_custom.js
+
+      - name: Diffuser les vidéos préenregistrées (sans boucle)
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: |
+          chmod +x push_prerecorded.sh
+          ./push_prerecorded.sh
