@@ -48,7 +48,6 @@ async function main() {
     const { data: existing } = await youtube.liveBroadcasts.list({
       part: ['id', 'contentDetails', 'status'],
       broadcastStatus: 'upcoming',
-      mine: true,
     });
     for (const b of existing.items || []) {
       if (b.contentDetails?.boundStreamId === YOUTUBE_STREAM_ID) {
