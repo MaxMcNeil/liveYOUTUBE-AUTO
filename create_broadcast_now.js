@@ -40,6 +40,26 @@ async function main() {
   oauth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
   const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
+  // Nettoyage : YouTube n'autorise qu'un seul broadcast actif par clé de
+  // flux. Si un ancien broadcast (test précédent, run précédent...) est
+  // resté accroché à ce même flux, on le supprime avant d'en créer un
+  // nouveau, sinon le nouveau échoue avec "clé de flux déjà attribuée".
+  try {
+    const { data: existing } = await youtube.liveBroadcasts.list({
+      part: ['id', 'contentDetails', 'status'],
+      broadcastStatus: 'upcoming',
+      mine: true,
+    });
+    for (const b of existing.items || []) {
+      if (b.contentDetails?.boundStreamId === YOUTUBE_STREAM_ID) {
+        console.log(`Suppression de l'ancien broadcast ${b.id} (encore lié au même flux)...`);
+        await youtube.liveBroadcasts.delete({ id: b.id });
+      }
+    }
+  } catch (cleanupErr) {
+    console.log('Nettoyage des anciens broadcasts ignoré :', cleanupErr.message);
+  }
+
   const now = new Date();
   const durationSec = Number(DURATION_SECONDS || 3600);
   const end = new Date(now.getTime() + durationSec * 1000);
