@@ -41,18 +41,40 @@ async function main() {
   const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
   // Nettoyage : YouTube n'autorise qu'un seul broadcast actif par clé de
-  // flux. Si un ancien broadcast (test précédent, run précédent...) est
-  // resté accroché à ce même flux, on le supprime avant d'en créer un
-  // nouveau, sinon le nouveau échoue avec "clé de flux déjà attribuée".
+  // flux. On regarde TOUS les statuts (broadcastStatus: 'all'), pas
+  // seulement 'upcoming' : un run précédent annulé/coupé en plein direct
+  // (job GitHub Actions annulé) peut laisser un broadcast bloqué en
+  // 'testing' ou 'live', qu'un filtre 'upcoming' seul ne renverrait
+  // jamais — et c'est justement ce broadcast bloqué qui reste bindé au
+  // flux et récupère le prochain live à la place du nouveau.
   try {
     const { data: existing } = await youtube.liveBroadcasts.list({
       part: ['id', 'contentDetails', 'status'],
-      broadcastStatus: 'upcoming',
+      broadcastStatus: 'all',
     });
     for (const b of existing.items || []) {
-      if (b.contentDetails?.boundStreamId === YOUTUBE_STREAM_ID) {
-        console.log(`Suppression de l'ancien broadcast ${b.id} (encore lié au même flux)...`);
-        await youtube.liveBroadcasts.delete({ id: b.id });
+      if (b.contentDetails?.boundStreamId !== YOUTUBE_STREAM_ID) continue;
+      const state = b.status?.lifeCycleStatus;
+      if (state === 'complete' || state === 'revoked') continue;
+
+      if (state === 'live' || state === 'testing') {
+        // Impossible de supprimer un broadcast encore en direct : il faut
+        // d'abord le faire basculer proprement vers 'complete'.
+        console.log(`Ancien broadcast ${b.id} bloqué en '${state}' — transition vers 'complete'...`);
+        try {
+          await youtube.liveBroadcasts.transition({
+            id: b.id,
+            broadcastStatus: 'complete',
+            part: ['id', 'status'],
+          });
+        } catch (transitionErr) {
+          console.log(`Transition de ${b.id} impossible :`, transitionErr.message);
+        }
+      } else {
+        console.log(`Suppression de l'ancien broadcast ${b.id} (état: ${state})...`);
+        await youtube.liveBroadcasts.delete({ id: b.id }).catch((delErr) => {
+          console.log(`Suppression de ${b.id} impossible :`, delErr.message);
+        });
       }
     }
   } catch (cleanupErr) {
@@ -102,5 +124,11 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Erreur lors de la création du broadcast YouTube (non bloquant) :', err.message);
+  // Une vraie erreur ici (contrairement aux secrets absents, gérés plus
+  // haut par un retour anticipé) signifie que le broadcast n'a pas été
+  // créé/lié correctement : mieux vaut faire échouer le job maintenant
+  // que de laisser stream_session.sh démarrer et diffuser sous le
+  // titre/la miniature de l'ancien live.
+  console.error('Erreur lors de la création du broadcast YouTube :', err.message);
+  process.exit(1);
 });
