@@ -110,7 +110,7 @@ echo "Démarrage de ffmpeg pour ${DURATION_SECONDS}s (arrêt automatique)..."
 timeout "$DURATION_SECONDS" ffmpeg -hide_banner -loglevel warning \
   -thread_queue_size 1024 -f x11grab -video_size "$RESOLUTION" -framerate "$FRAMERATE" -i "$DISPLAY_NUM" \
   -thread_queue_size 1024 "${AUDIO_INPUT_ARGS[@]}" \
-  -c:v libx264 -preset ultrafast -tune zerolatency -b:v 4000k -maxrate 4000k -bufsize 8000k \
+  -c:v libx264 -preset veryfast -b:v 6000k -maxrate 6000k -bufsize 12000k \
   -pix_fmt yuv420p -g $((FRAMERATE * 2)) \
   -c:a aac -b:a 128k -ar 44100 \
   -f tee -map 0:v -map 1:a \
