@@ -86,7 +86,8 @@ echo "Démarrage de Chromium (Playwright) en mode kiosk..."
   --window-size="${RESOLUTION/x/,}" --window-position=0,0 \
   --no-sandbox --disable-gpu --disable-dev-shm-usage \
   --no-first-run --no-default-browser-check --disable-sync \
-  --disable-features=SigninPromo,SigninInterceptFirstRunExperience \
+  --disable-features=SigninPromo,SigninInterceptFirstRunExperience,Translate,TranslateUI \
+  --disable-translate \
   --user-data-dir=/tmp/chromium-livestream-profile \
   "$INITIAL_URL" &
 PIDS+=($!)
