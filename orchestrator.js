@@ -122,7 +122,16 @@ async function main() {
   // debug distant, plutôt que d'ouvrir une nouvelle fenêtre invisible.
   const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
   const context = browser.contexts()[0];
-  const page = context.pages()[0] || (await context.newPage());
+  // Ne pas prendre pages()[0] à l'aveugle : si Chromium a ouvert un
+  // écran interne (first-run, sign-in, chrome://...) dans une fenêtre à
+  // part, ce serait celle-là plutôt que la vraie fenêtre kiosk. On filtre
+  // les URLs internes/vides et on retombe sur pages()[0] seulement si
+  // rien d'autre ne correspond.
+  const realPage = context.pages().find((p) => {
+    const url = p.url();
+    return url && !url.startsWith('chrome://') && !url.startsWith('chrome-extension://') && url !== 'about:blank';
+  });
+  const page = realPage || context.pages()[0] || (await context.newPage());
 
   // IMPORTANT : pas de page.setViewportSize() ici. Sur un navigateur
   // externe attaché via CDP (pas lancé par Playwright), setViewportSize
