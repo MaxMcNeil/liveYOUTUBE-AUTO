@@ -35,6 +35,7 @@ cleanup() {
   for pid in "${PIDS[@]:-}"; do
     kill "$pid" 2>/dev/null || true
   done
+  pulseaudio --kill 2>/dev/null || true
   wait 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
@@ -44,6 +45,29 @@ Xvfb "$DISPLAY_NUM" -screen 0 "${RESOLUTION}x24" -nolisten tcp &
 PIDS+=($!)
 export DISPLAY="$DISPLAY_NUM"
 sleep 2
+
+# Sans serveur audio, Chromium n'a nulle part où jouer les bips/effets
+# sonores du site (d'où les erreurs ALSA "cannot find card") et ffmpeg
+# n'a de toute façon rien à capturer : on créait jusqu'ici une piste
+# silencieuse en dur (anullsrc). On démarre un sink PulseAudio virtuel
+# pour que Chromium y joue réellement du son, que ffmpeg capture ensuite
+# depuis son "monitor". Repli sur le silence si PulseAudio est indisponible,
+# pour ne jamais faire échouer la diffusion pour une histoire de son.
+echo "Démarrage du serveur audio virtuel (PulseAudio)..."
+AUDIO_INPUT_ARGS=(-f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100")
+if pulseaudio --start --exit-idle-time=-1 --disallow-exit >/tmp/pulseaudio.log 2>&1; then
+  sleep 2
+  if pactl load-module module-null-sink sink_name=streamsink sink_properties=device.description=StreamSink >/dev/null 2>&1; then
+    pactl set-default-sink streamsink
+    export PULSE_SINK=streamsink
+    AUDIO_INPUT_ARGS=(-f pulse -i streamsink.monitor)
+    echo "Capture audio via PulseAudio (streamsink.monitor)."
+  else
+    echo "Sink PulseAudio non créé, audio en silence (anullsrc) en repli."
+  fi
+else
+  echo "Échec du démarrage de PulseAudio, audio en silence (anullsrc) en repli."
+fi
 
 echo "Démarrage de Chromium (Playwright) en mode kiosk..."
 "$CHROME_PATH" --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble \
@@ -71,7 +95,7 @@ PIDS+=($!)
 echo "Démarrage de ffmpeg pour ${DURATION_SECONDS}s (arrêt automatique)..."
 timeout "$DURATION_SECONDS" ffmpeg -hide_banner -loglevel warning \
   -thread_queue_size 1024 -f x11grab -video_size "$RESOLUTION" -framerate "$FRAMERATE" -i "$DISPLAY_NUM" \
-  -thread_queue_size 1024 -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 \
+  -thread_queue_size 1024 "${AUDIO_INPUT_ARGS[@]}" \
   -c:v libx264 -preset ultrafast -tune zerolatency -b:v 4000k -maxrate 4000k -bufsize 8000k \
   -pix_fmt yuv420p -g $((FRAMERATE * 2)) \
   -c:a aac -b:a 128k -ar 44100 \
