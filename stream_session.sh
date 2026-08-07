@@ -46,6 +46,17 @@ PIDS+=($!)
 export DISPLAY="$DISPLAY_NUM"
 sleep 2
 
+echo "Diagnostic — résolution réelle du serveur X (Xvfb) :"
+XDPYINFO_OUT="$(xdpyinfo -display "$DISPLAY_NUM" 2>&1)"
+echo "$XDPYINFO_OUT" | grep -i "dimensions" || echo "xdpyinfo indisponible ou a échoué."
+
+ACTUAL_DIMENSIONS="$(echo "$XDPYINFO_OUT" | grep -i "dimensions" | grep -oE '[0-9]+x[0-9]+' | head -1)"
+if [ -n "$ACTUAL_DIMENSIONS" ] && [ "$ACTUAL_DIMENSIONS" != "$RESOLUTION" ]; then
+  echo "ERREUR : Xvfb a démarré en ${ACTUAL_DIMENSIONS} au lieu de ${RESOLUTION} demandé."
+  echo "On arrête ici plutôt que de diffuser un format cassé."
+  exit 1
+fi
+
 # Sans serveur audio, Chromium n'a nulle part où jouer les bips/effets
 # sonores du site (d'où les erreurs ALSA "cannot find card") et ffmpeg
 # n'a de toute façon rien à capturer : on créait jusqu'ici une piste
