@@ -35,7 +35,7 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
           sudo apt-get update
-          sudo apt-get install -y xvfb ffmpeg pulseaudio pulseaudio-utils
+          sudo apt-get install -y xvfb ffmpeg pulseaudio pulseaudio-utils x11-utils
 
       - name: Générer le titre/description du jour (optionnel)
         env:
