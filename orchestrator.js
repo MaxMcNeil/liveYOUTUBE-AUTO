@@ -123,7 +123,25 @@ async function main() {
   const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
   const context = browser.contexts()[0];
   const page = context.pages()[0] || (await context.newPage());
-  await page.setViewportSize(config.viewport);
+
+  // IMPORTANT : pas de page.setViewportSize() ici. Sur un navigateur
+  // externe attaché via CDP (pas lancé par Playwright), setViewportSize
+  // n'agrandit PAS la vraie fenêtre : il ne fait qu'émuler des métriques
+  // de rendu (Emulation.setDeviceMetricsOverride) pour la page. Si la
+  // fenêtre réelle (--window-size au lancement de Chromium) ne fait pas
+  // EXACTEMENT la même taille, Chrome centre le contenu émulé dans la
+  // fenêtre réelle et laisse du vide autour — exactement le symptôme
+  // "widget centré avec bandes noires" observé. La taille de fenêtre
+  // réelle est déjà fixée au lancement de Chromium (stream_session.sh,
+  // --window-size), donc on s'y fie plutôt que de la re-émuler ici.
+  const cdp = await context.newCDPSession(page);
+  try {
+    const { windowId } = await cdp.send('Browser.getWindowForTarget');
+    const { bounds } = await cdp.send('Browser.getWindowBounds', { windowId });
+    console.log('Diagnostic — taille réelle de la fenêtre Chromium (CDP) :', JSON.stringify(bounds));
+  } catch (err) {
+    console.log('Diagnostic fenêtre CDP indisponible :', err.message);
+  }
 
   let index = 0;
   console.log('Orchestrateur démarré.');
@@ -142,6 +160,15 @@ async function main() {
       // Simule un geste utilisateur réel (reconnu par Chrome comme "trusted")
       // pour débloquer l'audio/AudioContext bloqué par la politique autoplay.
       await page.mouse.click(50, 50).catch(() => {});
+      const pageMetrics = await page.evaluate(() => {
+        const rect = document.body.getBoundingClientRect();
+        return {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          bodyRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+        };
+      }).catch((err) => ({ error: err.message }));
+      console.log(`[${site.name}] Diagnostic — dimensions vues par la page :`, JSON.stringify(pageMetrics));
     } catch (err) {
       console.log(`[${site.name}] Erreur de chargement (${err.message}), nouvelle tentative dans 10s.`);
       await sleep(10000);
