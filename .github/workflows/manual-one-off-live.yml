@@ -1,0 +1,57 @@
+name: Manual one-off live
+
+# Déclenché uniquement à la main (Actions > Manual one-off live > Run
+# workflow), jamais par cron. Pas de vraie "durée illimitée" possible :
+# les runners hébergés GitHub ont une limite dure de 6h par job, quoi
+# qu'on mette dans timeout-minutes. On se cale juste en dessous (5h50)
+# pour laisser une marge de sécurité au nettoyage de fin de job.
+#
+# Pour arrêter le live avant la fin : Actions > ce run en cours >
+# bouton "Cancel workflow" en haut à droite. Le script intercepte
+# l'arrêt (trap EXIT/INT/TERM dans stream_session.sh) et nettoie
+# proprement (Xvfb, Chromium, PulseAudio). YouTube détecte la coupure
+# du flux RTMP et clôture le broadcast automatiquement (~1 min).
+#
+# Si tu as besoin de plus de 5h50 d'affilée, il faudra relancer ce
+# workflow une seconde fois une fois le premier run terminé — un
+# nouveau broadcast sera créé à ce moment-là (même logique de
+# nettoyage des anciens broadcasts que le live programmé).
+on:
+  workflow_dispatch: {}
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # ~5h50, sous la limite dure de 6h des runners hébergés
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y xvfb ffmpeg pulseaudio pulseaudio-utils x11-utils
+
+      - name: Générer le titre/description du jour (optionnel)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          YOUTUBE_STREAM_ID: ${{ secrets.YOUTUBE_STREAM_ID }}
+          DURATION_SECONDS: "21000"
+        run: node create_broadcast_now.js
+
+      - name: Diffuser (jusqu'à 5h50, ou arrêt manuel via Cancel workflow)
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          DURATION_SECONDS: "21000"
+        run: |
+          chmod +x stream_session.sh
+          ./stream_session.sh
