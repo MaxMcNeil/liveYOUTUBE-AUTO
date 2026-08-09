@@ -66,18 +66,30 @@ fi
 # pour ne jamais faire échouer la diffusion pour une histoire de son.
 echo "Démarrage du serveur audio virtuel (PulseAudio)..."
 AUDIO_INPUT_ARGS=(-f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100")
+PULSE_AVAILABLE=false
 if pulseaudio --start --exit-idle-time=-1 --disallow-exit >/tmp/pulseaudio.log 2>&1; then
   sleep 2
   if pactl load-module module-null-sink sink_name=streamsink sink_properties=device.description=StreamSink >/dev/null 2>&1; then
     pactl set-default-sink streamsink
     export PULSE_SINK=streamsink
     AUDIO_INPUT_ARGS=(-f pulse -i streamsink.monitor)
+    PULSE_AVAILABLE=true
     echo "Capture audio via PulseAudio (streamsink.monitor)."
   else
     echo "Sink PulseAudio non créé, audio en silence (anullsrc) en repli."
   fi
 else
   echo "Échec du démarrage de PulseAudio, audio en silence (anullsrc) en repli."
+fi
+
+# Playlist voix/musique en fond, mixée dans le même sink que Chromium.
+# Seulement possible si PulseAudio a démarré (sinon rien où jouer).
+if [ "$PULSE_AVAILABLE" = true ]; then
+  echo "Démarrage de la playlist audio (musique/voix)..."
+  bash "$(dirname "$0")/audio_playlist.sh" streamsink &
+  PIDS+=($!)
+else
+  echo "Playlist audio ignorée (pas de sink PulseAudio disponible)."
 fi
 
 echo "Démarrage de Chromium (Playwright) en mode kiosk..."

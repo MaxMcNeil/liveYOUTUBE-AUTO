@@ -35,7 +35,7 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
           sudo apt-get update
-          sudo apt-get install -y xvfb ffmpeg pulseaudio pulseaudio-utils x11-utils
+          sudo apt-get install -y xvfb ffmpeg pulseaudio pulseaudio-utils x11-utils jq
 
       - name: Générer le titre/description du jour (optionnel)
         env:
@@ -50,6 +50,7 @@ jobs:
         env:
           YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
           DURATION_SECONDS: "3600"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x stream_session.sh
           ./stream_session.sh
