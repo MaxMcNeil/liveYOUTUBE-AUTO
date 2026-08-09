@@ -3,6 +3,12 @@
 Diffusion 100% automatisée sur GitHub Actions, sans serveur/VPS à gérer.
 
 ## Deux workflows
+Les 3 releases au total, chacune isolée à un seul workflow :
+
+Release (tag)	Utilisée par	Contenu
+prerecorded-lives	Prerecorded_Live_Now uniquement	Vidéos à enchaîner
+music	Manual one-off live uniquement	Musique de fond (boucle, 30%)
+voice	Manual one-off live uniquement	Voix (une fois chacune, volume original)
 
 ### 1. Live manuel ponctuel (`manual-one-off-live.yml`)
 
