@@ -58,10 +58,12 @@ download_release_assets() {
   fi
 
   echo "[audio-playlist] ${count} fichier(s) à télécharger depuis la release '${tag}'."
-  echo "$response" | jq -r '.assets[] | "\(.browser_download_url)\t\(.name)"' | \
-  while IFS=$'\t' read -r url name; do
+  echo "$response" | jq -r '.assets[] | "\(.id)\t\(.name)"' | \
+  while IFS=$'\t' read -r asset_id name; do
     echo "[audio-playlist]   - ${name}"
-    curl -sL "${auth_header[@]}" -o "${dest_dir}/${name}" "$url" || \
+    curl -sL "${auth_header[@]}" -H "Accept: application/octet-stream" \
+      "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${asset_id}" \
+      -o "${dest_dir}/${name}" || \
       echo "[audio-playlist]     échec du téléchargement de ${name}, ignoré."
   done
 }
@@ -87,10 +89,10 @@ play_track() {
 
   if [ -n "$volume_filter" ]; then
     ffmpeg -re -i "$file" -filter:a "$volume_filter" -f pulse -device "$SINK_NAME" \
-      -nostats -loglevel warning &
+      -nostats -loglevel warning "livestream-audio" &
   else
     ffmpeg -re -i "$file" -f pulse -device "$SINK_NAME" \
-      -nostats -loglevel warning &
+      -nostats -loglevel warning "livestream-audio" &
   fi
   CURRENT_PID=$!
   wait "$CURRENT_PID" 2>/dev/null || true

@@ -4,24 +4,23 @@ Diffusion 100% automatisée sur GitHub Actions, sans serveur/VPS à gérer.
 
 ## Deux workflows
 
-### 1. Diffusion programmée (`stream-scheduled.yml`)
+### 1. Live manuel ponctuel (`manual-one-off-live.yml`)
 
 Rotation en boucle de 3 sites web (dls-monitor, FranceLiveNews,
-slideshow — 3 min chacun), diffusée en format vertical (1080×1920).
+slideshow — durée par site réglable dans `config.json`, 3 min chacun
+par défaut), diffusée en format vertical (1080×1920).
 
-Déclenchement automatique chaque semaine :
+Déclenchement uniquement manuel : Actions → **"Manual one-off live"**
+→ **Run workflow**. Pour arrêter avant la fin, annuler le run en
+cours (bouton **Cancel workflow**) — le script nettoie proprement à
+l'arrêt et YouTube clôture le broadcast automatiquement.
 
-| Cron (UTC) | Jour | Heure Paris (été, UTC+2) |
-|---|---|---|
-| `0 8 * * 0` | Dimanche | 10h00 |
-| `0 18 * * 6` | Samedi | 20h00 |
-| `0 18 * * 2` | Mardi | 20h00 |
+Durée max ~5h50 (limite dure GitHub Actions : 6h par run, pas de vrai
+"illimité" possible sur des runners hébergés).
 
-⚠️ Fin octobre (passage à l'heure d'hiver UTC+1), décaler chaque cron
-de +1h dans `.github/workflows/stream-scheduled.yml`.
-
-Chaque session dure 1h et s'arrête automatiquement. Peut aussi être
-lancée manuellement (Actions → workflow → **Run workflow**).
+**Playlist audio de fond** (musique + voix), mixée avec le son du
+site affiché : voir la section [Playlist audio](#playlist-audio-musique--voix)
+plus bas.
 
 ### 2. Vidéos préenregistrées à la demande (`prerecorded-live-now.yml`)
 
@@ -39,6 +38,29 @@ procédure d'upload — les gros fichiers ne passent pas par git).
 
 Déclenchement uniquement manuel : Actions → **"Prerecorded_Live_Now"**
 → **Run workflow**.
+
+## Playlist audio (musique + voix)
+
+Concerne uniquement **"Manual one-off live"** (pas les vidéos
+préenregistrées). Deux **Releases GitHub** du dépôt, taguées
+exactement `music` et `voice`, avec vos fichiers audio en pièces
+jointes.
+
+- **`music`** : jouée en boucle, un morceau à la fois, **volume 30 %**.
+- **`voice`** : chaque fichier joué **une seule fois**, jamais en
+  boucle, **volume d'origine** (aucune modification).
+
+Ordre de lecture : voix 1 → musique 1 → voix 2 → musique 2 → ... →
+dernière voix, puis boucle musique seule jusqu'à la fin du live.
+Le tri au sein de chaque release se fait par ordre alphabétique des
+noms de fichiers (`01-...`, `02-...` pour maîtriser l'ordre).
+
+Mixée automatiquement avec le son du site affiché (bips, alertes) via
+un sink PulseAudio partagé. Aucun secret à créer : le token GitHub
+nécessaire (`GITHUB_TOKEN`) est fourni automatiquement par Actions.
+
+Si aucune des deux releases n'existe (ou est vide), le live démarre
+normalement, simplement sans musique/voix de fond.
 
 ## Secrets requis (Settings > Secrets and variables > Actions)
 
@@ -79,14 +101,15 @@ affichée dans YouTube Studio pour identifier le bon ID.
 
 ## Fichiers du projet
 
-- `orchestrator.js` — pilote la rotation des 3 sites (mode programmé)
-- `stream_session.sh` — capture d'écran + ffmpeg pour le mode programmé
+- `orchestrator.js` — pilote la rotation des 3 sites (live manuel)
+- `stream_session.sh` — capture d'écran + ffmpeg (live manuel)
+- `audio_playlist.sh` — playlist musique/voix de fond (live manuel)
 - `push_prerecorded.sh` — enchaîne et diffuse les vidéos préenregistrées
-- `create_broadcast_now.js` — titre/description datés (mode programmé)
+- `create_broadcast_now.js` — titre/description datés (live manuel)
 - `create_broadcast_custom.js` — titre/description depuis `input_METADATA.txt` (mode vidéos)
 - `list_streams.js` — diagnostic `YOUTUBE_STREAM_ID`
-- `config.json` — timing de rotation des sites
-- `youtube_description.txt` — texte de description (mode programmé)
+- `config.json` — timing de rotation des sites (live manuel)
+- `youtube_description.txt` — texte de description (live manuel)
 - `Prerecorded_lives/` — dossier d'accueil du fichier de métadonnées (les vidéos vont en Release, pas ici)
 
 ## Notes
