@@ -1,5 +1,6 @@
 # Livestream YouTube autonome — @LejournalduNON
-Prerecorded_lives tte descrptn remplie en cas d' vidéo release 
+**__Prerecorded_lives tte descrptn remplie en cas d' vidéo release 
+**__youtube_description.txt juste pour les live des 3 link
 Diffusion 100% automatisée sur GitHub Actions, sans serveur/VPS à gérer.
 
 ## Deux workflows
