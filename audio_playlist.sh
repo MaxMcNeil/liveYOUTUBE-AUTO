@@ -120,7 +120,7 @@ for ((i = 0; i < n_voice; i++)); do
   if [ "$n_music" -gt 0 ]; then
     idx=$((music_idx % n_music))
     echo "[audio-playlist] Musique (30%) : ${MUSIC_FILES[$idx]}"
-    play_track "${MUSIC_FILES[$idx]}" "volume=0.3"
+    play_track "${MUSIC_FILES[$idx]}" "volume=0.15"
     music_idx=$((music_idx + 1))
   fi
 done
