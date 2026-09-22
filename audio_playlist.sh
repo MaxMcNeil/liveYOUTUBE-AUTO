@@ -135,6 +135,6 @@ fi
 while true; do
   idx=$((music_idx % n_music))
   echo "[audio-playlist] Musique (boucle, 30%) : ${MUSIC_FILES[$idx]}"
-  play_track "${MUSIC_FILES[$idx]}" "volume=0.3"
+  play_track "${MUSIC_FILES[$idx]}" "volume=0.15"
   music_idx=$((music_idx + 1))
 done
