@@ -1,0 +1,133 @@
+name: Générer la voix clonée (texte long)
+
+# Ne s'exécute JAMAIS automatiquement — uniquement à la demande, une
+# fois de temps en temps quand tu changes le texte à lire. Le live
+# (manual-one-off-live.yml) n'est pas touché par ce workflow : il se
+# contente de lire ce que ce workflow-ci dépose sur la release "voice_ia"
+# — une release dédiée, distincte de "voice" (tes vrais enregistrements
+# ponctuels, jamais touchés par ce workflow).
+on:
+  workflow_dispatch:
+    inputs:
+      text_file:
+        description: "Chemin du fichier texte dans le repo (ex: voice_script.txt)"
+        required: true
+        default: "voice_script.txt"
+      chunks:
+        description: "Nombre de morceaux (= nombre de coupures pendant le live). ~15-20 pour 5h45."
+        required: true
+        default: "18"
+      live_duration_seconds:
+        description: "Durée totale du live visée, en secondes (5h45 = 20700)"
+        required: true
+        default: "20700"
+      language:
+        description: "Code langue Chatterbox (fr, en, it, ...)"
+        required: true
+        default: "fr"
+
+jobs:
+  # ---------------------------------------------------------------
+  # 1) Découpe le texte et prépare la liste des index pour le matrix
+  # ---------------------------------------------------------------
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Découpage du texte
+        run: |
+          python3 scripts/split_text.py "${{ inputs.text_file }}" \
+            --chunks "${{ inputs.chunks }}" \
+            --out chunks.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chunks-plan
+          path: chunks.json
+      - id: set-matrix
+        run: |
+          n=$(python3 -c "import json; print(len(json.load(open('chunks.json'))))")
+          matrix=$(python3 -c "import json; print(json.dumps(list(range($n))))")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------
+  # 2) Télécharge une fois l'échantillon de voix (release
+  #    "ma_voix_a_cloner"), le rogne à 10s (stabilité du clonage
+  #    Chatterbox), le partage avec tous les jobs du matrix.
+  # ---------------------------------------------------------------
+  prepare_reference:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Télécharge l'échantillon de voix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download ma_voix_a_cloner --repo "${{ github.repository }}" -D ref_raw -p "*"
+          f=$(find ref_raw -type f | head -1)
+          echo "Échantillon source : $f"
+          ffmpeg -y -i "$f" -t 10 -ar 24000 -ac 1 voix_reference.wav -loglevel error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-reference
+          path: voix_reference.wav
+
+  # ---------------------------------------------------------------
+  # 3) Génère chaque morceau en parallèle (un job par index)
+  # ---------------------------------------------------------------
+  generate:
+    needs: [plan, prepare_reference]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        index: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: chunks-plan
+      - uses: actions/download-artifact@v4
+        with:
+          name: voice-reference
+      - name: Installe Chatterbox (CPU)
+        run: |
+          pip install --quiet --break-system-packages chatterbox-tts torch torchaudio --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+      - name: Génère le morceau ${{ matrix.index }}
+        run: |
+          python3 scripts/generate_voice_chunk.py \
+            --chunks-file chunks.json \
+            --index "${{ matrix.index }}" \
+            --ref-audio voix_reference.wav \
+            --language "${{ inputs.language }}" \
+            --out "chunk_$(printf '%04d' ${{ matrix.index }}).wav"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-chunk-${{ matrix.index }}
+          path: chunk_*.wav
+
+  # ---------------------------------------------------------------
+  # 4) Rassemble tous les morceaux, calcule le planning uniforme sur
+  #    toute la durée du live, renomme et publie sur la release "voice_ia"
+  # ---------------------------------------------------------------
+  schedule_and_publish:
+    needs: [generate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharge tous les morceaux générés
+        uses: actions/download-artifact@v4
+        with:
+          pattern: voice-chunk-*
+          path: generated
+          merge-multiple: true
+      - name: Planifie et publie sur la release "voice_ia"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/schedule_and_publish.py \
+            --chunks-dir generated \
+            --duration "${{ inputs.live_duration_seconds }}" \
+            --start-offset 30 \
+            --repo "${{ github.repository }}" \
+            --tag voice_ia
