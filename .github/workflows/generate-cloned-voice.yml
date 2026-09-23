@@ -59,6 +59,8 @@ jobs:
   prepare_reference:
     runs-on: ubuntu-latest
     steps:
+      - name: Installe ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Télécharge l'échantillon de voix
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,6 +123,8 @@ jobs:
           pattern: voice-chunk-*
           path: generated
           merge-multiple: true
+      - name: Installe ffmpeg (ffprobe)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Planifie et publie sur la release "voice_ia"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
