@@ -26,6 +26,12 @@ on:
         required: true
         default: "fr"
 
+# Nécessaire pour que "gh release create/upload/delete-asset" fonctionne
+# dans schedule_and_publish — sans ça, GITHUB_TOKEN n'a que l'accès en
+# lecture par défaut et l'étape échoue en 403.
+permissions:
+  contents: write
+
 jobs:
   # ---------------------------------------------------------------
   # 1) Découpe le texte et prépare la liste des index pour le matrix
