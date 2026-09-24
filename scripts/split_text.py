@@ -25,6 +25,14 @@ import sys
 # couper EN PLEIN MILIEU d'une phrase.
 SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?…])\s+")
 
+# Plafond dur, indépendant du nombre de morceaux demandé : la limite
+# absolue de Chatterbox est 4096 tokens (~163s, 25 tokens/s). En
+# supposant un débit plancher très prudent de 10 caractères/seconde
+# (personne ne parle aussi lentement), un morceau ne devrait jamais
+# dépasser ~1260 caractères pour tenir dans cette limite avec marge.
+# On se garde une marge supplémentaire en dessous.
+MAX_CHARS_PER_CHUNK = 1000
+
 
 def split_sentences(text: str):
     text = text.strip()
@@ -42,21 +50,23 @@ def split_sentences(text: str):
     return sentences
 
 
-def pack_into_chunks(sentences, n_chunks: int):
+def pack_into_chunks(sentences, n_chunks: int, hard_max_chars: int = MAX_CHARS_PER_CHUNK):
     total_chars = sum(len(s) for s in sentences)
     if total_chars == 0:
         return []
     target = total_chars / n_chunks
+    # Jamais au-dessus du plafond dur, même si la tolérance de 15% le permettrait.
+    soft_limit = min(target * 1.15, hard_max_chars)
 
     chunks = []
     current = []
     current_len = 0
     for sentence in sentences:
-        # Si ajouter cette phrase dépasse largement la cible ET qu'on a
-        # déjà de quoi faire un chunk, on clôt le chunk courant avant de
+        # Si ajouter cette phrase dépasse la limite ET qu'on a déjà de
+        # quoi faire un chunk, on clôt le chunk courant avant de
         # continuer — jamais au milieu d'une phrase, toujours à une
         # frontière de phrase déjà identifiée.
-        if current and (current_len + len(sentence)) > target * 1.15 and len(chunks) < n_chunks - 1:
+        if current and (current_len + len(sentence)) > soft_limit:
             chunks.append(" ".join(current))
             current = []
             current_len = 0
@@ -92,6 +102,23 @@ def main():
             f"Réduit automatiquement à {n_chunks}.",
             file=sys.stderr,
         )
+
+    # Garde-fou : si diviser le texte en n_chunks donnerait des morceaux
+    # trop longs pour Chatterbox (risque de coupure au plafond de
+    # tokens), on augmente automatiquement le nombre de morceaux — le
+    # nombre demandé par l'utilisateur est un MINIMUM, jamais dépassé
+    # à la baisse, mais peut être poussé à la hausse pour la sécurité.
+    total_chars = sum(len(s) for s in sentences)
+    min_chunks_for_safety = max(1, -(-total_chars // MAX_CHARS_PER_CHUNK))  # ceil division
+    if min_chunks_for_safety > n_chunks:
+        print(
+            f"[split_text] Attention : {args.chunks} morceaux donnerait ~"
+            f"{total_chars // args.chunks} caractères/morceau, trop long pour Chatterbox "
+            f"(risque de coupure). Nombre de morceaux augmenté automatiquement à "
+            f"{min_chunks_for_safety} pour rester sous {MAX_CHARS_PER_CHUNK} caractères/morceau.",
+            file=sys.stderr,
+        )
+        n_chunks = min_chunks_for_safety
 
     chunks = pack_into_chunks(sentences, n_chunks)
 
