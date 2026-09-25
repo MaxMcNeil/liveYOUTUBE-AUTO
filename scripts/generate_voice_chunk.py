@@ -41,18 +41,26 @@ MAX_ATTEMPTS = 5
 
 # Vitesse de parole plafond, volontairement prudente : sert à détecter
 # une coupure prématurée (résultat plus court que ce qu'un débit humain
-# plausible le plus rapide pourrait justifier). Les énoncés étant courts
-# (une phrase ou une sous-clause, <=220 caractères, voir split_text.py),
-# on reste de toute façon largement sous le plafond de durée par défaut
-# du modèle — pas besoin de le piloter explicitement (le paramètre
-# max_new_tokens n'est d'ailleurs pas exposé par cette version de
-# ChatterboxMultilingualTTS.generate()).
+# plausible le plus rapide pourrait justifier).
 CEILING_CHARS_PER_SECOND = 45
 MIN_ABSOLUTE_SECONDS = 0.3      # les sous-clauses peuvent être très courtes
+
+# Vitesse de parole plancher, tout aussi prudente dans l'autre sens :
+# sert à détecter une HALLUCINATION (le modèle ajoute des mots/phrases
+# absents du texte source, phénomène connu des TTS autorégressifs).
+# Si la durée obtenue est plus longue que ce qu'un débit humain
+# plausible le plus lent pourrait justifier pour CE texte précis, le
+# résultat contient très probablement du contenu en trop.
+SLOWEST_CHARS_PER_SECOND = 7
+MAX_DURATION_BUFFER_SECONDS = 1.5  # marge fixe pour les très courts énoncés
 
 
 def expected_min_duration(text: str) -> float:
     return max(MIN_ABSOLUTE_SECONDS, len(text) / CEILING_CHARS_PER_SECOND)
+
+
+def expected_max_duration(text: str) -> float:
+    return len(text) / SLOWEST_CHARS_PER_SECOND + MAX_DURATION_BUFFER_SECONDS
 
 
 def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_weight,
@@ -63,6 +71,7 @@ def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_w
     import torch
 
     min_ok = expected_min_duration(text)
+    max_ok = expected_max_duration(text)
 
     wav = None
     duration = 0.0
@@ -81,18 +90,24 @@ def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_w
             cfg_weight=cfg_weight,
         )
         duration = candidate.shape[-1] / model.sr
-        print(f"[generate_voice_chunk]     -> {duration:.2f}s")
+        print(f"[generate_voice_chunk]     -> {duration:.2f}s (attendu entre {min_ok:.1f}s et {max_ok:.1f}s)")
 
-        if duration >= min_ok:
+        if min_ok <= duration <= max_ok:
             wav = candidate
             break
-        print(f"[generate_voice_chunk]     Résultat suspect (trop court pour le texte, "
-              f"probable coupure prématurée / 'forcing EOS') — nouvel essai avec une autre seed.")
+        if duration < min_ok:
+            print(f"[generate_voice_chunk]     Résultat suspect (trop court pour le texte, "
+                  f"probable coupure prématurée / 'forcing EOS') — nouvel essai avec une autre seed.")
+        else:
+            print(f"[generate_voice_chunk]     Résultat suspect (trop long pour le texte, "
+                  f"probable HALLUCINATION — mots/phrases ajoutés absents du script) — nouvel "
+                  f"essai avec une autre seed.")
 
     if wav is None:
         print(
-            f"ERREUR : {utterance_label} reste anormalement court après {MAX_ATTEMPTS} essais "
-            f"({duration:.2f}s attendu >= {min_ok:.1f}s). Texte : \"{text[:80]}...\"",
+            f"ERREUR : {utterance_label} reste anormal après {MAX_ATTEMPTS} essais "
+            f"({duration:.2f}s, attendu entre {min_ok:.1f}s et {max_ok:.1f}s). "
+            f"Texte : \"{text[:80]}...\"",
             file=sys.stderr,
         )
         sys.exit(1)
