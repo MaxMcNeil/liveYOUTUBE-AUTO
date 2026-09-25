@@ -1,89 +1,287 @@
-[ton:colere]
+[ton:calme]
 
-Alors ! Est-ce qu'ils cherchent réellement des solutions, ces gens-là ?
+Pendant que vous regardez cette vidéo, des entreprises continuent de fonctionner sur des systèmes dont quelqu'un, quelque part, cherche peut-être déjà la clé.
 
-Ou est-ce qu'ils cherchent le chaos ?
+Et entre le 5 et le 11 septembre 2026, une série de revendications cyber dessine un tableau particulièrement inquiétant.
 
-Premièrement… la remise de 30 centimes à la pompe, par décret, pour tous les mois.
+Plus de vingt acteurs distincts apparaissent dans les données que nous examinons.
 
-Le texte de 2022 existe.
+Des industriels.
 
-Il suffit de reprendre le mécanisme.
+Des banques.
 
-Quinze euros sur un plein de cinquante litres.
+Des services d'emploi.
 
-C'est immédiat.
+Des collectivités.
 
-Et ce n'est pas une mesure théorique. Le dispositif de remise sur les carburants avait bien été utilisé en 2022.
+Des hôpitaux.
 
-Mais ce n'est que la première piste.
+Et des entreprises présentes dans des secteurs stratégiques.
 
 [ton:normal]
 
-Il y en a une deuxième.
+Sept jours seulement.
 
-Un arrêté pour laisser rouler les camions-citernes le dimanche.
+Pris séparément, chaque événement peut sembler être une attaque de plus.
 
-Brugnon l'a elle-même expliqué. Cette mesure pourrait contribuer à éviter certaines ruptures d'approvisionnement.
+Mais lorsqu'on remet les événements dans l'ordre…
 
-Et là encore, le principe est simple.
-
-Pas besoin d'inventer un nouveau système.
-
-Il faut permettre aux camions de circuler.
-
-Le coût budgétaire direct peut être nul.
-
-Ils peuvent prendre cette décision rapidement.
-
-Mais bon…
-
-Encore faut-il vouloir le faire.
-
-Et justement, c'est là que le problème devient intéressant.
+Le tableau devient beaucoup plus difficile à ignorer.
 
 [ton:calme]
 
-Troisième piste.
+Commençons par le 5 septembre.
 
-La clause anti-rente fiscale.
+À 11 heures 30, QILIN revendique le piratage de Jouvet SAS, en France.
 
-Quand le prix du carburant monte, l'État encaisse davantage de TVA sur le prix payé à la pompe.
+Le groupe affirme avoir dérobé des données et réclame une rançon.
 
-L'idée serait donc simple.
+Attention toutefois.
 
-Si cette hausse génère un surplus de recettes fiscales, ce surplus repart automatiquement vers les automobilistes sous forme de baisse de taxe.
+Il s'agit ici d'une revendication attribuée à QILIN.
 
-Et s'il n'y a pas de surplus, comme l'affirme le gouvernement…
-
-Ce qui, personnellement, m'étonnerait…
-
-Alors la mesure ne coûte rien.
-
-Rien à compenser.
-
-Rien à financer.
+Une revendication criminelle n'est pas, à elle seule, une preuve technique indépendante de l'intrusion.
 
 [ton:normal]
 
-Et ce mécanisme n'est pas complètement sorti d'un chapeau.
+Le 6 septembre, la séquence continue.
 
-L'Italie utilise déjà des mécanismes fiscaux permettant d'agir sur les accises lorsque les recettes liées à la fiscalité des carburants évoluent.
+Gojin Motors et Batipro apparaissent dans des revendications attribuées à un acteur identifié comme INCONNU.
 
-Donc, encore une fois…
+Là encore, l'attribution reste incertaine.
 
-Les pistes existent.
+[ton:calme]
 
-Les précédents existent.
+Puis arrive le 7 septembre.
 
-Les outils existent.
+L'activité s'élargit.
 
-[ton:colere]
+THEGENTLEMEN revendique plusieurs cibles.
 
-Alors la vraie question n'est peut-être pas :
+Parmi elles : Yapı Merkezi, Ritz Safety, Superstore, Zanini et El Carriel.
 
-« Est-ce qu'on a des solutions ? »
+DIREWOLF revendique Precision Vehicle Logistics et TrainMe.
 
-La vraie question, c'est :
+Et INTERLOCK apparaît dans une revendication concernant NFM Lending.
 
-« Est-ce qu'on veut réellement les appliquer ? »
+Nous parlons ici de revendications.
+
+Pas nécessairement d'incidents dont tous les détails techniques ont été publiquement confirmés.
+
+Cette distinction est essentielle.
+
+[ton:normal]
+
+Puis vient le 8 septembre.
+
+Et cette date mérite qu'on s'y attarde.
+
+À 6 heures 02…
+
+RHYSIDA revendique une intrusion chez SAD'S Interim.
+
+Plus tard, à 16 heures 52…
+
+PANZER revendique une attaque contre la Financière d'Uzès.
+
+Deux horaires.
+
+Deux victimes.
+
+Deux groupes différents.
+
+Et deux secteurs particulièrement sensibles.
+
+[ton:calme]
+
+Le même jour, d'autres revendications apparaissent.
+
+SAFEPAY cite notamment plusieurs entités.
+
+PLAY revendique Red Star Oil.
+
+Et AKIRA apparaît dans une revendication concernant Brent Electric.
+
+La journée du 8 septembre concentre donc plusieurs événements distincts.
+
+Mais cela ne prouve pas une opération coordonnée.
+
+[ton:normal]
+
+C'est justement ici qu'il faut regarder PANZER de plus près.
+
+Le groupe est décrit comme un opérateur de Ransomware-as-a-Service.
+
+Son modèle repose notamment sur la double extorsion.
+
+Les données sont volées.
+
+Puis la victime est menacée de publication.
+
+Mais attention à ne pas aller plus loin que les preuves disponibles.
+
+Le fait que PANZER revendique une victime ne permet pas, à lui seul, de déterminer comment l'accès initial aurait été obtenu.
+
+Une fuite d'identifiants est une hypothèse.
+
+Un accès acheté auprès d'un courtier est une autre possibilité.
+
+Une vulnérabilité exploitée en est une autre.
+
+Sans éléments techniques publiés et vérifiables, ces scénarios restent des hypothèses.
+
+[ton:calme]
+
+Même prudence concernant VMware ESXi.
+
+PANZER est associé à des capacités visant des environnements virtualisés.
+
+Mais cela ne signifie pas automatiquement que chaque victime revendiquée a été compromise par ce moyen.
+
+Une capacité technique n'est pas une preuve d'utilisation.
+
+Cette nuance peut sembler secondaire.
+
+Elle ne l'est pas.
+
+[ton:normal]
+
+Après le 8 septembre, la séquence continue.
+
+Le 9 septembre, Le Tampon, à La Réunion, apparaît dans une revendication attribuée à INCONNU.
+
+DIREWOLF revendique également RelyComply AML.
+
+Et EMPERADOR apparaît dans une revendication concernant le Centre d'action contre les mines de Bosnie-Herzégovine.
+
+Puis vient le 10 septembre.
+
+CLOP revendique des attaques contre HARLEY-DAVIDSON.COM et HENRYPRATT.COM.
+
+EMPERADOR apparaît également dans une revendication concernant EASY JOB S.A.S., en France.
+
+Et WALLSTREET revendique Goldston Oil Corporation.
+
+[ton:calme]
+
+Enfin, le 11 septembre.
+
+PANZER revendique l'Agence d'État de météorologie espagnole et Konica Minolta Bulgaria.
+
+RHYSIDA, de son côté, menace de publier 2,44 téraoctets de données médicales attribuées au General Santos Doctors Hospital.
+
+Là encore…
+
+Nous devons parler de revendications et de menaces publiées par des groupes criminels.
+
+Pas de faits techniquement établis dans tous leurs détails.
+
+[ton:normal]
+
+Alors, que reste-t-il après ces sept jours ?
+
+Un constat.
+
+La France apparaît dans plusieurs secteurs.
+
+L'industrie avec Jouvet SAS.
+
+La finance avec la Financière d'Uzès.
+
+Les services liés à l'emploi avec SAD'S Interim et EASY JOB.
+
+Et les collectivités avec Le Tampon.
+
+Mais cette chronologie ne permet pas d'affirmer qu'un seul groupe contrôle l'ensemble de ces attaques.
+
+Elle ne permet pas non plus d'affirmer que PANZER et RHYSIDA travaillent ensemble.
+
+[ton:calme]
+
+En revanche, elle révèle une réalité beaucoup plus concrète.
+
+Notre économie repose sur des milliers d'interconnexions.
+
+Un compte compromis.
+
+Un accès distant exposé.
+
+Un prestataire vulnérable.
+
+Une infrastructure mal configurée.
+
+Et la faiblesse d'un seul maillon peut devenir le point d'entrée d'une attaque beaucoup plus importante.
+
+[ton:normal]
+
+C'est pour cela que la question ne devrait plus être seulement :
+
+« Qui a été attaqué ? »
+
+Il faut demander :
+
+« Comment l'accès a-t-il été obtenu ? »
+
+« Quels identifiants ont été exposés ? »
+
+« Quels prestataires avaient accès aux systèmes ? »
+
+Et surtout…
+
+« Combien d'autres organisations présentent exactement la même faiblesse ? »
+
+[ton:calme]
+
+Parce qu'une revendication peut être fausse.
+
+Une attribution peut être corrigée.
+
+Une donnée peut être exagérée.
+
+Mais une vulnérabilité réelle, elle, ne disparaît pas simplement parce qu'un criminel ment sur son exploit.
+
+[ton:normal]
+
+Alors ne partagez pas cette vidéo simplement parce que le titre fait peur.
+
+Partagez-la pour une raison plus utile.
+
+Pour rappeler aux entreprises, aux administrations et aux particuliers que la cybersécurité ne commence pas le jour où les données sont publiées.
+
+Elle commence avant.
+
+Vérifiez vos accès distants.
+
+Révoquez les anciens comptes.
+
+Activez l'authentification multifacteur.
+
+Surveillez les identifiants compromis.
+
+Et surtout, sauvegardez vos données hors ligne lorsque c'est possible.
+
+[ton:calme]
+
+Parce que le prochain incident ne sera peut-être pas spectaculaire.
+
+Il commencera peut-être par un simple compte compromis.
+
+Un seul.
+
+Et parfois, c'est tout ce qu'il faut.
+
+[ton:normal]
+
+Suivez les faits.
+
+Vérifiez les revendications.
+
+Ne confondez pas une accusation avec une preuve.
+
+Mais ne sous-estimez jamais une vulnérabilité réelle.
+
+C'est précisément là que commence la défense.
+
+
+A bon entendeur.
+
