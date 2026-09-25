@@ -35,6 +35,44 @@ programmée) et `voice` est ignorée pour cette diffusion-là. Si
 la release `voice_ia` (supprime ses assets) avant de lancer le live —
 sinon elle prendra le dessus.
 
+## Contrôle du ton (optionnel)
+
+Insère des balises `[ton:xxx]` dans ton texte pour changer le ton à
+partir de cet endroit (jusqu'à la balise suivante) :
+
+```
+Alors !!!! Vous plaisantez ?
+
+Bon, bref, passons. [ton:calme]
+Le 23 septembre 2026, quelque chose saute aux yeux...
+
+[ton:colere]
+Ça vous dérange pas de dire n'importe quoi !
+
+[ton:normal]
+Et maintenant, regardons la France.
+```
+
+Tons disponibles : `normal`, `calme`, `colere`, `sarcastique`. Rien à
+mettre si tu ne t'en sers pas — tout reste en `normal` par défaut.
+
+⚠️ Chatterbox n'a pas de vrai moteur d'émotions nommées — seulement 2
+curseurs (`exaggeration` = intensité, `cfg_weight` = rythme). Ces tons
+sont une approximation à base de ces 2 curseurs. `colere`/`calme`
+fonctionnent raisonnablement bien ; `sarcastique` reste expérimental
+(l'ironie tient surtout au choix des mots, pas à un simple réglage
+audio).
+
+## Comment le texte est transformé en audio (V2)
+
+Chaque phrase (et chaque sous-clause d'une phrase trop longue) est
+générée par un appel Chatterbox **séparé**, puis recollée avec un
+petit silence — plutôt qu'un seul gros pavé de texte envoyé en une
+fois. C'est ce qui rend la génération robuste : un modèle
+autorégressif comme Chatterbox dérive/hallucine bien plus sur un long
+texte d'un coup que sur des phrases courtes prises une par une. C'est
+aussi ce qui permet de faire varier le ton phrase par phrase.
+
 ## Mise en place (une fois)
 
 1. **Rendre le repo public** (nécessaire pour les minutes Actions
