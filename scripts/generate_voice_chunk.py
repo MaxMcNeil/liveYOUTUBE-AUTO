@@ -39,35 +39,16 @@ BASE_SEED = 42  # seed "normale", gardée pour la grande majorité des énoncés
                 # qui échouent au 1er essai changent de seed.
 MAX_ATTEMPTS = 5
 
-TOKENS_PER_SECOND = 25          # constante Chatterbox (documentée)
-MODEL_MAX_TOKENS = 4096         # limite absolue du modèle (~163s)
-
-# Vitesse de parole plancher, volontairement TRÈS prudente (personne ne
-# parle aussi lentement en pratique) : sert uniquement à calculer un
-# budget de tokens large pour ne JAMAIS être la cause d'une coupure.
-# Les énoncés étant désormais courts (une phrase ou une sous-clause),
-# ce budget reste presque toujours petit — l'essentiel de la marge de
-# sécurité vient maintenant du découpage en amont, pas de ce budget.
-FLOOR_CHARS_PER_SECOND = 10
-TOKEN_BUDGET_HEADROOM = 1.3     # +30% de marge par rapport au plancher
-
-# Vitesse de parole plafond, tout aussi prudente dans l'autre sens : sert
-# à détecter une coupure prématurée (résultat plus court que ce qu'un
-# débit humain plausible le plus rapide pourrait justifier).
+# Vitesse de parole plafond, volontairement prudente : sert à détecter
+# une coupure prématurée (résultat plus court que ce qu'un débit humain
+# plausible le plus rapide pourrait justifier). Les énoncés étant courts
+# (une phrase ou une sous-clause, <=220 caractères, voir split_text.py),
+# on reste de toute façon largement sous le plafond de durée par défaut
+# du modèle — pas besoin de le piloter explicitement (le paramètre
+# max_new_tokens n'est d'ailleurs pas exposé par cette version de
+# ChatterboxMultilingualTTS.generate()).
 CEILING_CHARS_PER_SECOND = 45
 MIN_ABSOLUTE_SECONDS = 0.3      # les sous-clauses peuvent être très courtes
-
-# Si la durée obtenue arrive à >= 95% du budget de tokens alloué, c'est
-# très probablement une coupure par plafond (pas la fin naturelle du
-# texte) : on retente avec un budget de tokens plus large, pas juste
-# une autre seed.
-NEAR_CAP_RATIO = 0.95
-
-
-def token_budget_for(text: str) -> int:
-    seconds_needed = len(text) / FLOOR_CHARS_PER_SECOND
-    tokens = int(seconds_needed * TOKENS_PER_SECOND * TOKEN_BUDGET_HEADROOM)
-    return max(120, min(MODEL_MAX_TOKENS, tokens))
 
 
 def expected_min_duration(text: str) -> float:
@@ -76,12 +57,12 @@ def expected_min_duration(text: str) -> float:
 
 def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_weight,
                             utterance_label):
-    """Génère UN énoncé, avec retry si le résultat semble tronqué.
-    Renvoie le waveform torch (1, n_samples)."""
+    """Génère UN énoncé, avec retry (nouvelle seed) si le résultat semble
+    tronqué par le bug de coupure prématurée de Chatterbox. Renvoie le
+    waveform torch (1, n_samples)."""
     import torch
 
     min_ok = expected_min_duration(text)
-    tokens_budget = token_budget_for(text)
 
     wav = None
     duration = 0.0
@@ -90,37 +71,28 @@ def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_w
         random.seed(seed)
         torch.manual_seed(seed)
 
-        cap_seconds = tokens_budget / TOKENS_PER_SECOND
         print(f"[generate_voice_chunk]   {utterance_label} essai {attempt}/{MAX_ATTEMPTS} "
-              f"(seed={seed}, max_new_tokens={tokens_budget} ~{cap_seconds:.1f}s, "
-              f"exaggeration={exaggeration}, cfg_weight={cfg_weight})...")
+              f"(seed={seed}, exaggeration={exaggeration}, cfg_weight={cfg_weight})...")
         candidate = model.generate(
             text,
             audio_prompt_path=ref_audio,
             language_id=language,
             exaggeration=exaggeration,
             cfg_weight=cfg_weight,
-            max_new_tokens=tokens_budget,
         )
         duration = candidate.shape[-1] / model.sr
-        near_cap = duration >= NEAR_CAP_RATIO * cap_seconds
-        print(f"[generate_voice_chunk]     -> {duration:.2f}s"
-              f"{'  ⚠️ proche du plafond (probable coupure)' if near_cap else ''}")
+        print(f"[generate_voice_chunk]     -> {duration:.2f}s")
 
-        if duration >= min_ok and not near_cap:
+        if duration >= min_ok:
             wav = candidate
             break
-
-        if near_cap:
-            tokens_budget = min(MODEL_MAX_TOKENS, int(tokens_budget * 1.5))
-        # sinon : trop court sans être proche du plafond -> probable
-        # coupure prématurée (bug EOS), on change juste de seed au tour
-        # suivant (déjà fait en haut de boucle).
+        print(f"[generate_voice_chunk]     Résultat suspect (trop court pour le texte, "
+              f"probable coupure prématurée / 'forcing EOS') — nouvel essai avec une autre seed.")
 
     if wav is None:
         print(
-            f"ERREUR : {utterance_label} reste anormalement court ou tronqué après "
-            f"{MAX_ATTEMPTS} essais ({duration:.2f}s). Texte : \"{text[:80]}...\"",
+            f"ERREUR : {utterance_label} reste anormalement court après {MAX_ATTEMPTS} essais "
+            f"({duration:.2f}s attendu >= {min_ok:.1f}s). Texte : \"{text[:80]}...\"",
             file=sys.stderr,
         )
         sys.exit(1)
