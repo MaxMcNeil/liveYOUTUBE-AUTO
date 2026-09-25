@@ -14,13 +14,9 @@ on:
         required: true
         default: "voice_script.txt"
       chunks:
-        description: "Nombre de morceaux (= nombre de coupures pendant le live). ~15-20 pour 5h45."
+        description: "Nombre de morceaux minimum (répartis en jobs parallèles). ~15-20 pour un texte de plusieurs minutes."
         required: true
         default: "18"
-      live_duration_seconds:
-        description: "Durée totale du live visée, en secondes (5h45 = 20700)"
-        required: true
-        default: "20700"
       language:
         description: "Code langue Chatterbox (fr, en, it, ...)"
         required: true
@@ -116,8 +112,10 @@ jobs:
           path: chunk_*.wav
 
   # ---------------------------------------------------------------
-  # 4) Rassemble tous les morceaux, calcule le planning uniforme sur
-  #    toute la durée du live, renomme et publie sur la release "voice_ia"
+  # 4) Rassemble tous les morceaux, les remet dans l'ordre du texte,
+  #    et publie sur la release "voice_ia". Lus en mode séquentiel par
+  #    audio_playlist.sh : silence initial, puis narration complète
+  #    sans musique, du premier au dernier morceau.
   # ---------------------------------------------------------------
   schedule_and_publish:
     needs: [generate]
@@ -132,13 +130,11 @@ jobs:
           merge-multiple: true
       - name: Installe ffmpeg (ffprobe)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Planifie et publie sur la release "voice_ia"
+      - name: Publie sur la release "voice_ia"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 scripts/schedule_and_publish.py \
             --chunks-dir generated \
-            --duration "${{ inputs.live_duration_seconds }}" \
-            --start-offset 30 \
             --repo "${{ github.repository }}" \
             --tag voice_ia
