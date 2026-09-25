@@ -19,7 +19,9 @@ la génération ("forcing EOS") dès les tout premiers pas
 d'échantillonnage, produisant un résultat ridiculement court. C'est
 sporadique et dépend de la seed — donc chaque énoncé est vérifié et
 RÉESSAYÉ avec une seed différente si le résultat est manifestement
-trop court, jusqu'à MAX_ATTEMPTS fois.
+trop court, trop long (hallucination), ou se termine de façon abrupte
+(mot/phrase coupé net, détecté sur l'énergie audio des dernières
+millisecondes), jusqu'à MAX_ATTEMPTS fois.
 
 Usage :
     python3 generate_voice_chunk.py \
@@ -54,6 +56,18 @@ MIN_ABSOLUTE_SECONDS = 0.3      # les sous-clauses peuvent être très courtes
 SLOWEST_CHARS_PER_SECOND = 7
 MAX_DURATION_BUFFER_SECONDS = 1.5  # marge fixe pour les très courts énoncés
 
+# Détection de coupure abrupte (mot/phrase coupé net) : une fin de
+# phrase naturelle redescend en énergie (la voix "s'éteint"), alors
+# qu'une troncature en plein milieu s'arrête à pleine énergie. On
+# compare l'énergie moyenne des toutes dernières millisecondes à
+# l'énergie globale de l'énoncé — un ratio élevé est suspect. Ce
+# contrôle est indépendant de la durée : il attrape les troncatures
+# "modérées" que les bornes min/max ci-dessus peuvent laisser passer
+# (un énoncé un peu court, mais pas assez pour déclencher le seuil
+# minimum, peut quand même être coupé en plein mot).
+TAIL_WINDOW_MS = 150
+TAIL_ENERGY_RATIO_THRESHOLD = 0.35
+
 
 def expected_min_duration(text: str) -> float:
     return max(MIN_ABSOLUTE_SECONDS, len(text) / CEILING_CHARS_PER_SECOND)
@@ -61,6 +75,23 @@ def expected_min_duration(text: str) -> float:
 
 def expected_max_duration(text: str) -> float:
     return len(text) / SLOWEST_CHARS_PER_SECOND + MAX_DURATION_BUFFER_SECONDS
+
+
+def ends_abruptly(wav, sr: int) -> bool:
+    """True si les dernières TAIL_WINDOW_MS millisecondes du waveform
+    portent encore une énergie proche du reste de l'énoncé — signe que
+    le son a été coupé net plutôt que de se terminer naturellement."""
+    n_samples = wav.shape[-1]
+    tail_len = int(sr * TAIL_WINDOW_MS / 1000)
+    if n_samples <= tail_len:
+        return False  # énoncé trop court pour que le test ait un sens
+
+    overall_energy = wav.abs().mean().item()
+    tail_energy = wav[..., -tail_len:].abs().mean().item()
+    if overall_energy <= 1e-6:
+        return False  # silence total, rien à analyser
+
+    return (tail_energy / overall_energy) > TAIL_ENERGY_RATIO_THRESHOLD
 
 
 def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_weight,
@@ -90,23 +121,29 @@ def generate_one_utterance(model, text, ref_audio, language, exaggeration, cfg_w
             cfg_weight=cfg_weight,
         )
         duration = candidate.shape[-1] / model.sr
-        print(f"[generate_voice_chunk]     -> {duration:.2f}s (attendu entre {min_ok:.1f}s et {max_ok:.1f}s)")
+        abrupt = ends_abruptly(candidate, model.sr)
+        print(f"[generate_voice_chunk]     -> {duration:.2f}s (attendu entre {min_ok:.1f}s et {max_ok:.1f}s)"
+              f"{'  ⚠️ fin abrupte détectée' if abrupt else ''}")
 
-        if min_ok <= duration <= max_ok:
+        if min_ok <= duration <= max_ok and not abrupt:
             wav = candidate
             break
         if duration < min_ok:
             print(f"[generate_voice_chunk]     Résultat suspect (trop court pour le texte, "
                   f"probable coupure prématurée / 'forcing EOS') — nouvel essai avec une autre seed.")
-        else:
+        elif duration > max_ok:
             print(f"[generate_voice_chunk]     Résultat suspect (trop long pour le texte, "
                   f"probable HALLUCINATION — mots/phrases ajoutés absents du script) — nouvel "
                   f"essai avec une autre seed.")
+        else:
+            print(f"[generate_voice_chunk]     Résultat suspect (fin abrupte — probable mot/phrase "
+                  f"coupé net) — nouvel essai avec une autre seed.")
 
     if wav is None:
         print(
             f"ERREUR : {utterance_label} reste anormal après {MAX_ATTEMPTS} essais "
-            f"({duration:.2f}s, attendu entre {min_ok:.1f}s et {max_ok:.1f}s). "
+            f"({duration:.2f}s, attendu entre {min_ok:.1f}s et {max_ok:.1f}s, "
+            f"fin abrupte={ends_abruptly(candidate, model.sr)}). "
             f"Texte : \"{text[:80]}...\"",
             file=sys.stderr,
         )
