@@ -22,12 +22,11 @@ Toute la narration clonée passe par une release **séparée et dédiée** :
 - `voice` → à toi, comme aujourd'hui. Ne JAMAIS y déposer les fichiers
   générés par ce workflow.
 - `voice_ia` → réservée à ce workflow. Ne JAMAIS y déposer un vrai
-  enregistrement à la main (les noms de fichiers doivent garder leur
-  préfixe numérique généré automatiquement, ex: `01845_v007.wav`).
+  enregistrement à la main.
 
 `audio_playlist.sh` regarde `voice_ia` en premier : si elle contient
-des fichiers valides, c'est elle qui pilote tout le live (narration
-programmée) et `voice` est ignorée pour cette diffusion-là. Si
+des fichiers, c'est elle qui pilote le début du live (mode séquentiel,
+voir plus bas) et `voice` est ignorée pour cette diffusion-là. Si
 `voice_ia` est vide, comportement strictement identique à avant, avec
 `voice`.
 
@@ -92,24 +91,23 @@ aussi ce qui permet de faire varier le ton phrase par phrase.
 Actions → **"Générer la voix clonée (texte long)"** → **Run workflow** :
 
 - `text_file` : chemin du fichier texte (ex: `voice_script.txt`)
-- `chunks` : nombre de coupures pendant le live (donc de morceaux
-  générés). **~15 à 20** fonctionne bien pour 5h45 — assez pour que ce
-  soit "éparpillé", pas trop pour ne pas payer trop de temps CPU.
-- `live_duration_seconds` : `20700` pour 5h45 (laisse une marge sous
-  la limite GitHub Actions de 6h = 21600s)
+- `chunks` : nombre de morceaux minimum, répartis en jobs parallèles
+  pour paralléliser la génération. **~15 à 20** fonctionne bien pour un
+  texte de plusieurs minutes — le nombre exact n'a plus d'impact sur le
+  rythme du live (voir "Comment ça s'intègre au live" plus bas), juste
+  sur le temps de génération.
 - `language` : `fr`
 
 Le workflow :
-1. Découpe le texte en `chunks` morceaux, jamais au milieu d'une phrase.
-2. Génère chaque morceau **en parallèle** (un job par morceau) avec
-   Chatterbox Multilingual, sur CPU, voix clonée depuis
-   `ma_voix_a_cloner`.
-3. Calcule automatiquement à quel instant du live chaque morceau doit
-   démarrer, pour une répartition uniforme sur toute la durée, avec la
-   première coupure exactement à t=30s.
-4. Publie les fichiers renommés (ex: `01845_v007.wav`) sur la Release
-   `voice_ia` — en remplaçant tout ce qui s'y trouvait avant (jamais
-   `voice`, qui reste intouchée).
+1. Découpe le texte en `chunks` morceaux minimum, jamais au milieu
+   d'une phrase (et jamais au-delà de ~220 caractères par énoncé — les
+   phrases plus longues sont sous-découpées à la virgule).
+2. Génère chaque morceau **en parallèle** (un job par morceau, phrase
+   par phrase à l'intérieur de chaque morceau) avec Chatterbox
+   Multilingual V3, sur CPU, voix clonée depuis `ma_voix_a_cloner`.
+3. Remet tous les morceaux dans l'ordre du texte source et les publie
+   sur la Release `voice_ia` — en remplaçant tout ce qui s'y trouvait
+   avant (jamais `voice`, qui reste intouchée).
 
 ⚠️ **Non testé en conditions réelles ici** (pas de GPU/réseau vers
 Hugging Face dans mon bac à sable) : avant de lancer sur ton texte
@@ -125,22 +123,22 @@ même un texte long devrait rester gérable.
 
 ## Comment ça s'intègre au live (chronologie)
 
-Exactement ce que tu as décrit :
-
 ```
-t=0    → live démarre, bips/musique du site comme d'habitude
-t=30s  → coupure nette de la musique → 1er morceau de voix clonée
-       → fin du morceau → musique/bips reprennent normalement
-t=X    → coupure nette → 2e morceau de voix clonée
-       → reprise musique...
-...    → jusqu'à la fin du live (dernier morceau, puis musique seule
-          en boucle jusqu'à l'arrêt)
+t=0     → live démarre, silence total (ni musique ni bips)
+t=5s    → la narration démarre : tous les morceaux de voice_ia
+          s'enchaînent du premier au dernier, sans musique entre eux
+t=fin   → une fois la narration terminée, reprise normale du live
+          (bips/musique en boucle, comme n'importe quel autre live)
 ```
 
-`audio_playlist.sh` détecte automatiquement ce "mode planifié" dès que
-la release `voice_ia` contient des fichiers valides. Si elle est vide,
+`audio_playlist.sh` détecte automatiquement ce "mode séquentiel" dès
+que la release `voice_ia` contient des fichiers. Si elle est vide,
 l'ancien comportement reprend automatiquement avec `voice`, sans rien
 à changer.
+
+Le délai de 5s avant le début de la narration est réglable via la
+variable d'environnement `SILENCE_BEFORE_VOICE_IA_S` dans
+`audio_playlist.sh` (5 par défaut).
 
 ## Régénérer avec un nouveau texte
 
