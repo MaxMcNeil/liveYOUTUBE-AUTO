@@ -128,6 +128,9 @@ def normalize_punctuation(text: str) -> str:
     return text
 
 
+HAS_LETTER_RE = re.compile(r"[^\W\d_]", re.UNICODE)  # au moins une vraie lettre
+
+
 def split_sentences(text: str):
     text = normalize_punctuation(text.strip())
     if not text:
@@ -140,7 +143,18 @@ def split_sentences(text: str):
     for para in paragraphs:
         para = re.sub(r"\s+", " ", para)
         parts = SENTENCE_SPLIT_RE.split(para)
-        sentences.extend(s.strip() for s in parts if s.strip())
+        for part in (p.strip() for p in parts if p.strip()):
+            # Un fragment sans aucune lettre (ex: un simple "»" laissé
+            # seul après un "? »" coupé au niveau du "?") n'est pas une
+            # phrase : on le recolle au fragment précédent plutôt que
+            # d'en faire un énoncé à part — un énoncé réduit à de la
+            # ponctuation fait dérailler Chatterbox (résultat aberrant,
+            # detecté comme hallucination par generate_voice_chunk.py,
+            # qui finit par échouer après ses 5 essais).
+            if sentences and not HAS_LETTER_RE.search(part):
+                sentences[-1] = f"{sentences[-1]}{part}"
+            else:
+                sentences.append(part)
     return sentences
 
 
