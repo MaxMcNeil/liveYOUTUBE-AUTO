@@ -136,6 +136,12 @@ que la release `voice_ia` contient des fichiers. Si elle est vide,
 l'ancien comportement reprend automatiquement avec `voice`, sans rien
 à changer.
 
+Techniquement, les 18 morceaux (ou combien qu'il y en ait) ne sont
+**pas** joués via 18 connexions audio séparées — ça provoquait un clic
+audible à chaque raccord et pouvait tronquer la toute fin de chaque
+morceau (flux fermé avant d'être vidé). Ils sont concaténés en un seul
+flux continu avant lecture (voir `play_concat` dans le script).
+
 Le délai de 5s avant le début de la narration est réglable via la
 variable d'environnement `SILENCE_BEFORE_VOICE_IA_S` dans
 `audio_playlist.sh` (5 par défaut).

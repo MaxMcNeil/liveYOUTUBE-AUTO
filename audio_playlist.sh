@@ -23,9 +23,11 @@
 #
 # MODE SÉQUENTIEL (voice_ia) : le live démarre par 5s de silence total
 # (ni musique ni bips), puis tous les morceaux de voice_ia s'enchaînent
-# du premier au dernier SANS musique entre eux. Une fois la narration
-# terminée, le live reprend son fonctionnement normal (bips/musique en
-# boucle, comme pour tous les autres lives).
+# du premier au dernier SANS musique entre eux, dans UN SEUL flux audio
+# continu (voir play_concat) — pas de connexion PulseAudio séparée par
+# morceau, pour éviter tout clic ou troncature au raccord. Une fois la
+# narration terminée, le live reprend son fonctionnement normal
+# (bips/musique en boucle, comme pour tous les autres lives).
 #
 # Arguments :
 #   $1 = nom du sink PulseAudio à utiliser (ex: streamsink)
@@ -120,6 +122,31 @@ play_track() {
   CURRENT_PID=""
 }
 
+# play_concat LISTE_DE_FICHIERS...
+# Joue plusieurs fichiers À LA SUITE dans une seule connexion PulseAudio
+# continue (via le démultiplexeur "concat" d'ffmpeg), plutôt qu'une
+# connexion séparée par fichier. Essentiel pour la narration séquentielle :
+# ouvrir/fermer une connexion par morceau provoque un "clic" audible à
+# chaque raccord, et pire, peut tronquer la toute fin de chaque morceau
+# (le flux se ferme avant que le tampon ne soit intégralement vidé). Un
+# seul flux continu élimine les deux problèmes.
+play_concat() {
+  local list_file
+  list_file="$(mktemp /tmp/audio-concat-XXXXXX.txt)"
+  for f in "$@"; do
+    # Échappe les apostrophes pour le format concat d'ffmpeg
+    # (file 'chemin'), au cas où un nom de fichier en contiendrait.
+    printf "file '%s'\n" "${f//\'/\'\\\'\'}" >> "$list_file"
+  done
+
+  ffmpeg -re -f concat -safe 0 -i "$list_file" -f pulse -device "$SINK_NAME" \
+    -nostats -loglevel warning "livestream-audio" &
+  CURRENT_PID=$!
+  wait "$CURRENT_PID" 2>/dev/null || true
+  CURRENT_PID=""
+  rm -f "$list_file"
+}
+
 
 mapfile -t MUSIC_FILES < <(find "$MUSIC_DIR" -maxdepth 1 -type f | sort)
 mapfile -t VOICE_IA_FILES < <(find "$VOICE_IA_DIR" -maxdepth 1 -type f ! -name '*.json' | sort)
@@ -153,13 +180,11 @@ fi
 music_idx=0
 
 if [ "$n_voice" -gt 0 ] && [ "$SEQUENTIAL_MODE" = true ]; then
-  echo "[audio-playlist] Mode narration clonée séquentielle : ${SILENCE_BEFORE_VOICE_IA_S}s de silence, puis ${n_voice} morceau(x) à la suite, sans musique entre eux."
+  echo "[audio-playlist] Mode narration clonée séquentielle : ${SILENCE_BEFORE_VOICE_IA_S}s de silence, puis ${n_voice} morceau(x) à la suite (flux continu, sans musique entre eux)."
   sleep "$SILENCE_BEFORE_VOICE_IA_S"
 
-  for ((i = 0; i < n_voice; i++)); do
-    echo "[audio-playlist] Voix IA $((i + 1))/${n_voice} (volume original) : ${VOICE_FILES[$i]}"
-    play_track "${VOICE_FILES[$i]}" ""
-  done
+  echo "[audio-playlist] Lecture de la narration complète (${n_voice} morceaux) en un seul flux..."
+  play_concat "${VOICE_FILES[@]}"
 
   echo "[audio-playlist] Narration terminée. Reprise du fonctionnement normal (bips/musique en boucle)."
 else
