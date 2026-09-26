@@ -1,287 +1,823 @@
 [ton:calme]
 
-Pendant que vous regardez cette vidéo, des entreprises continuent de fonctionner sur des systèmes dont quelqu'un, quelque part, cherche peut-être déjà la clé.
+Le problème n'est peut-être pas le prix que vous voyez à la pompe.
 
-Et entre le 5 et le 11 septembre 2026, une série de revendications cyber dessine un tableau particulièrement inquiétant.
+Le vrai problème…
 
-Plus de vingt acteurs distincts apparaissent dans les données que nous examinons.
+C'est ce qui se passe derrière.
 
-Des industriels.
+Parce que lorsqu'une partie importante du pétrole et du gaz ne peut plus circuler normalement, ce ne sont pas seulement les automobilistes qui paient.
 
-Des banques.
+Les pêcheurs paient.
 
-Des services d'emploi.
+Les transporteurs paient.
 
-Des collectivités.
+Les agriculteurs paient.
 
-Des hôpitaux.
+Les industriels paient.
 
-Et des entreprises présentes dans des secteurs stratégiques.
+Et, à la fin…
+
+C'est toute l'économie qui finit par présenter la facture.
 
 [ton:normal]
 
-Sept jours seulement.
+Depuis plusieurs semaines, les sources que nous examinons décrivent une crise énergétique qui touche à la fois le pétrole, le diesel et le gaz.
 
-Pris séparément, chaque événement peut sembler être une attaque de plus.
+Mais surtout, elles montrent que cette crise ne se limite pas à une question de prix.
 
-Mais lorsqu'on remet les événements dans l'ordre…
+Elle touche les approvisionnements.
 
-Le tableau devient beaucoup plus difficile à ignorer.
+Les capacités de raffinage.
+
+Le transport maritime.
+
+Les finances publiques.
+
+Et même les équilibres géopolitiques.
+
+Alors, reprenons les choses dans l'ordre.
 
 [ton:calme]
 
-Commençons par le 5 septembre.
+Commençons par la situation qui inquiète le plus les marchés.
 
-À 11 heures 30, QILIN revendique le piratage de Jouvet SAS, en France.
+Le détroit d'Ormuz.
 
-Le groupe affirme avoir dérobé des données et réclame une rançon.
+Selon les analyses présentées dans les sources, son blocage ou sa forte perturbation aurait immédiatement des conséquences majeures sur le marché pétrolier.
 
-Attention toutefois.
+Un chiffre revient plusieurs fois.
 
-Il s'agit ici d'une revendication attribuée à QILIN.
+Environ 20 millions de barils par jour.
 
-Une revendication criminelle n'est pas, à elle seule, une preuve technique indépendante de l'intrusion.
+Cela représenterait autour de 20 % de la production mondiale citée dans ces analyses.
+
+Et environ un quart des volumes de pétrole transportés par voie maritime.
+
+Autrement dit…
+
+Une perturbation prolongée ne toucherait pas seulement quelques pays du Golfe.
+
+Elle pourrait rapidement toucher les marchés mondiaux.
 
 [ton:normal]
 
-Le 6 septembre, la séquence continue.
+Mais il faut ici faire une distinction importante.
 
-Gojin Motors et Batipro apparaissent dans des revendications attribuées à un acteur identifié comme INCONNU.
+Ces chiffres et ces scénarios sont ceux présentés par les intervenants des sources.
 
-Là encore, l'attribution reste incertaine.
+Ils décrivent une situation géopolitique et énergétique extrêmement tendue.
+
+Ils ne constituent pas, à eux seuls, une prévision certaine de ce qui va se produire.
+
+Cette nuance est essentielle.
+
+Parce qu'entre un scénario possible et une catastrophe effectivement réalisée…
+
+Il y a encore une énorme différence.
 
 [ton:calme]
 
-Puis arrive le 7 septembre.
+Revenons maintenant à ce qui se passe concrètement sur les marchés.
 
-L'activité s'élargit.
+Les sources expliquent que l'Arabie saoudite tente de compenser une partie des volumes qui ne passent plus normalement par les routes maritimes.
 
-THEGENTLEMEN revendique plusieurs cibles.
+Un oléoduc traverse le territoire saoudien jusqu'à la mer Rouge.
 
-Parmi elles : Yapı Merkezi, Ritz Safety, Superstore, Zanini et El Carriel.
+Mais selon les chiffres cités par Jacques Sapir, les capacités disponibles par cette voie ne suffiraient pas à remplacer complètement les volumes manquants.
 
-DIREWOLF revendique Precision Vehicle Logistics et TrainMe.
+Et c'est précisément là que le problème apparaît.
 
-Et INTERLOCK apparaît dans une revendication concernant NFM Lending.
+Même lorsque le pétrole continue de circuler…
 
-Nous parlons ici de revendications.
+Il peut ne plus circuler par les mêmes routes.
 
-Pas nécessairement d'incidents dont tous les détails techniques ont été publiquement confirmés.
+Il peut coûter plus cher.
 
-Cette distinction est essentielle.
+Et il peut devenir beaucoup plus difficile à assurer et à transporter.
 
 [ton:normal]
 
-Puis vient le 8 septembre.
+Ce qui nous amène au deuxième problème.
 
-Et cette date mérite qu'on s'y attarde.
+Le diesel.
 
-À 6 heures 02…
+Et là, les conséquences deviennent beaucoup plus concrètes.
 
-RHYSIDA revendique une intrusion chez SAD'S Interim.
+Parce que le diesel n'est pas seulement le carburant de votre voiture.
 
-Plus tard, à 16 heures 52…
+Il fait fonctionner une partie considérable du transport routier.
 
-PANZER revendique une attaque contre la Financière d'Uzès.
+Les camions.
 
-Deux horaires.
+Les engins agricoles.
 
-Deux victimes.
+Une partie des activités industrielles.
 
-Deux groupes différents.
+Et une grande partie de la chaîne logistique.
 
-Et deux secteurs particulièrement sensibles.
+Si le diesel devient trop cher…
+
+Certaines activités ne deviennent simplement plus rentables.
+
+[ton:colere]
+
+Et c'est exactement ce que décrivent les pêcheurs français.
+
+David Le Quintrec explique que, pour les entreprises de pêche, le gazole représente pratiquement le sang de leur activité.
+
+Selon son témoignage, si les prix restent à ces niveaux, certains bateaux pourraient ne plus avoir intérêt à sortir en mer.
+
+Il évoque même une échéance de l'ordre d'une à deux semaines pour certaines entreprises.
+
+Attention.
+
+Il s'agit de son estimation et de son témoignage.
+
+Pas d'une prévision officielle concernant l'ensemble de la pêche française.
+
+Mais le problème économique qu'il décrit est très simple.
+
+Si le coût du carburant dépasse ce que l'activité peut absorber…
+
+Le bateau reste à quai.
+
+[ton:normal]
+
+Et les pêcheurs ne demandent pas seulement une nouvelle aide ponctuelle.
+
+Dans son témoignage, Le Quintrec évoque une autre logique.
+
+Une petite taxe sur certains poissons importés.
+
+Et une autre contribution concernant les groupes pétroliers.
+
+L'objectif serait de réduire la dépendance aux aides publiques répétées à chaque nouvelle crise du carburant.
+
+C'est une proposition.
+
+Pas une mesure actuellement généralisée.
+
+Mais elle montre surtout une chose.
+
+Le problème n'est plus seulement le niveau du prix.
+
+C'est la répétition des crises.
 
 [ton:calme]
 
-Le même jour, d'autres revendications apparaissent.
+Et justement…
 
-SAFEPAY cite notamment plusieurs entités.
+Cette répétition nous ramène à la France.
 
-PLAY revendique Red Star Oil.
+Parce que la hausse du carburant intervient dans une économie qui dispose déjà de marges budgétaires limitées.
 
-Et AKIRA apparaît dans une revendication concernant Brent Electric.
+Les sources consacrées aux finances françaises rappellent un chiffre particulièrement lourd.
 
-La journée du 8 septembre concentre donc plusieurs événements distincts.
+Le taux d'emprunt à dix ans de la France est présenté autour de 4,1 %.
 
-Mais cela ne prouve pas une opération coordonnée.
+Et les intérêts de la dette représenteraient environ 64 milliards d'euros pour l'année évoquée dans l'émission.
+
+Cela change complètement la discussion.
+
+Pourquoi ?
+
+Parce que lorsque l'État doit déjà consacrer davantage d'argent au service de sa dette…
+
+Chaque nouvelle aide coûte davantage.
 
 [ton:normal]
 
-C'est justement ici qu'il faut regarder PANZER de plus près.
+Et c'est là que la crise énergétique rejoint la crise budgétaire.
 
-Le groupe est décrit comme un opérateur de Ransomware-as-a-Service.
+Une hausse du carburant peut provoquer une baisse du pouvoir d'achat.
 
-Son modèle repose notamment sur la double extorsion.
+Cette baisse peut peser sur la consommation.
 
-Les données sont volées.
+Les entreprises peuvent voir leurs coûts augmenter.
 
-Puis la victime est menacée de publication.
+Les transporteurs peuvent répercuter ces coûts.
 
-Mais attention à ne pas aller plus loin que les preuves disponibles.
+Les prix des produits peuvent monter.
 
-Le fait que PANZER revendique une victime ne permet pas, à lui seul, de déterminer comment l'accès initial aurait été obtenu.
+Et l'État peut ensuite être poussé à intervenir.
 
-Une fuite d'identifiants est une hypothèse.
+Mais intervenir coûte de l'argent.
 
-Un accès acheté auprès d'un courtier est une autre possibilité.
-
-Une vulnérabilité exploitée en est une autre.
-
-Sans éléments techniques publiés et vérifiables, ces scénarios restent des hypothèses.
+Et cet argent doit être trouvé quelque part.
 
 [ton:calme]
 
-Même prudence concernant VMware ESXi.
+Les intervenants de l'émission consacrée à la dette décrivent d'ailleurs une situation où la crise financière et la crise sociale sont étroitement liées.
 
-PANZER est associé à des capacités visant des environnements virtualisés.
+L'inflation officielle peut sembler relativement contenue.
 
-Mais cela ne signifie pas automatiquement que chaque victime revendiquée a été compromise par ce moyen.
+Mais le ressenti des ménages peut être très différent.
 
-Une capacité technique n'est pas une preuve d'utilisation.
+Parce qu'un ménage ne paie pas une moyenne statistique.
 
-Cette nuance peut sembler secondaire.
+Il paie son plein.
 
-Elle ne l'est pas.
+Son alimentation.
+
+Son chauffage.
+
+Son transport.
+
+Et ses factures.
+
+C'est là que les chiffres macroéconomiques rencontrent la vie quotidienne.
 
 [ton:normal]
 
-Après le 8 septembre, la séquence continue.
+Mais le carburant n'est qu'une partie du problème.
 
-Le 9 septembre, Le Tampon, à La Réunion, apparaît dans une revendication attribuée à INCONNU.
+Il y a aussi le gaz.
 
-DIREWOLF revendique également RelyComply AML.
+Et le gaz obéit à une logique différente.
 
-Et EMPERADOR apparaît dans une revendication concernant le Centre d'action contre les mines de Bosnie-Herzégovine.
+Les sources citent le marché européen TTF comme référence pour les prix de gros du gaz.
 
-Puis vient le 10 septembre.
+Pour le premier semestre 2026, une moyenne d'environ 55 euros par mégawattheure est évoquée.
 
-CLOP revendique des attaques contre HARLEY-DAVIDSON.COM et HENRYPRATT.COM.
+Pour l'industrie européenne, le chiffre présenté monte autour de 66 euros.
 
-EMPERADOR apparaît également dans une revendication concernant EASY JOB S.A.S., en France.
+Aux États-Unis, la comparaison donnée dans l'émission est beaucoup plus basse.
 
-Et WALLSTREET revendique Goldston Oil Corporation.
+Autour de 13 euros par mégawattheure pour l'industriel américain.
 
 [ton:calme]
 
-Enfin, le 11 septembre.
+Cette différence est fondamentale.
 
-PANZER revendique l'Agence d'État de météorologie espagnole et Konica Minolta Bulgaria.
+Parce qu'elle touche directement la compétitivité.
 
-RHYSIDA, de son côté, menace de publier 2,44 téraoctets de données médicales attribuées au General Santos Doctors Hospital.
+Une entreprise européenne qui paie beaucoup plus cher son énergie qu'une entreprise américaine part avec un handicap.
 
-Là encore…
+Et ce handicap peut ensuite se retrouver dans le prix final des produits.
 
-Nous devons parler de revendications et de menaces publiées par des groupes criminels.
+Ou dans les marges des entreprises.
 
-Pas de faits techniquement établis dans tous leurs détails.
+Ou dans les investissements.
+
+Ou dans les décisions de production.
 
 [ton:normal]
 
-Alors, que reste-t-il après ces sept jours ?
+Et pendant ce temps, les stocks de gaz européens restent un autre sujet de préoccupation.
 
-Un constat.
+Une des sources rappelle qu'un objectif de stockage de 90 % avant la période hivernale avait été fixé.
 
-La France apparaît dans plusieurs secteurs.
+Le niveau cité dans l'émission est d'environ 63 %.
 
-L'industrie avec Jouvet SAS.
+Là encore, ce chiffre appartient au contexte présenté par la source.
 
-La finance avec la Financière d'Uzès.
+Il doit donc être replacé dans sa date et dans son évolution.
 
-Les services liés à l'emploi avec SAD'S Interim et EASY JOB.
+Mais le message est clair.
 
-Et les collectivités avec Le Tampon.
+Plus l'hiver approche avec des stocks insuffisants et des approvisionnements incertains…
 
-Mais cette chronologie ne permet pas d'affirmer qu'un seul groupe contrôle l'ensemble de ces attaques.
-
-Elle ne permet pas non plus d'affirmer que PANZER et RHYSIDA travaillent ensemble.
+Plus le système devient sensible aux nouvelles perturbations.
 
 [ton:calme]
 
-En revanche, elle révèle une réalité beaucoup plus concrète.
+Et maintenant, il faut revenir au pétrole.
 
-Notre économie repose sur des milliers d'interconnexions.
+Parce que le pétrole et le gaz ne réagissent pas exactement de la même manière.
 
-Un compte compromis.
+Le pétrole se transporte relativement facilement.
 
-Un accès distant exposé.
+Le gaz demande des infrastructures spécifiques.
 
-Un prestataire vulnérable.
+Gazoducs.
 
-Une infrastructure mal configurée.
+Terminaux.
 
-Et la faiblesse d'un seul maillon peut devenir le point d'entrée d'une attaque beaucoup plus importante.
+Méthaniers.
+
+Stockage.
+
+Et capacités de regazéification.
+
+Une perturbation du trafic maritime peut donc provoquer des effets différents selon le produit concerné.
 
 [ton:normal]
 
-C'est pour cela que la question ne devrait plus être seulement :
+Les sources évoquent également les conséquences possibles sur le raffinage.
 
-« Qui a été attaqué ? »
+Et c'est un point particulièrement important pour la France.
 
-Il faut demander :
+Parce que produire ou importer du pétrole brut ne suffit pas.
 
-« Comment l'accès a-t-il été obtenu ? »
+Il faut pouvoir le transformer.
 
-« Quels identifiants ont été exposés ? »
+Une raffinerie peut donc devenir un élément stratégique.
 
-« Quels prestataires avaient accès aux systèmes ? »
+Or les sources rappellent que certaines capacités françaises ont été arrêtées ou mises sous cocon.
+
+Et cela réduit la marge de manœuvre lorsque la demande augmente ou que les importations de produits raffinés deviennent plus difficiles.
+
+[ton:calme]
+
+C'est ici qu'apparaît une contradiction.
+
+Taxer davantage les groupes pétroliers peut sembler logique lorsque les prix explosent.
+
+Mais une taxation supplémentaire peut aussi modifier les décisions d'investissement.
+
+Et selon les intervenants, une entreprise pourrait considérer qu'une activité de raffinage devient trop peu rentable.
+
+Il faut donc distinguer deux choses.
+
+La taxation des bénéfices exceptionnels d'un côté.
+
+Et la préservation des capacités industrielles stratégiques de l'autre.
+
+Ce ne sont pas exactement les mêmes problèmes.
+
+[ton:normal]
+
+Et puis arrive une autre question.
+
+Pourquoi le diesel devient-il aussi critique ?
+
+Parce que le diesel dépend du raffinage.
+
+Et parce que le marché du diesel est mondial.
+
+Un pays peut avoir suffisamment de pétrole brut…
+
+Et pourtant manquer de diesel.
+
+C'est une distinction fondamentale.
+
+Le pétrole brut n'est pas directement utilisable par un camion.
+
+Il faut le raffiner.
+
+Et si les capacités de raffinage sont sous pression…
+
+Le problème peut apparaître même lorsque le pétrole continue d'exister sur le marché.
+
+[ton:calme]
+
+C'est également ce qui explique pourquoi plusieurs sources parlent d'une possible propagation vers l'alimentation.
+
+Pas parce que le pétrole se transforme magiquement en nourriture.
+
+Mais parce que presque toute la chaîne alimentaire dépend de l'énergie.
+
+Le tracteur consomme du carburant.
+
+Le camion consomme du diesel.
+
+Les engrais nécessitent de l'énergie.
+
+Les usines consomment de l'électricité et du gaz.
+
+Les produits doivent ensuite être transportés.
+
+Donc, lorsque l'énergie augmente fortement…
+
+Le choc peut se propager.
+
+[ton:normal]
+
+Et c'est là que l'analyse devient géopolitique.
+
+Parce que les tensions ne concernent plus seulement l'Europe.
+
+Elles concernent aussi les États-Unis.
+
+La Chine.
+
+L'Inde.
+
+Les pays du Golfe.
+
+La Russie.
+
+L'Iran.
+
+Et les pays membres ou partenaires des BRICS.
+
+Certaines analyses présentées dans les sources vont encore plus loin.
+
+Elles estiment que la crise énergétique pourrait accélérer une transformation du système monétaire international.
+
+C'est notamment la thèse défendue par Douglas Macgregor.
+
+Mais ici encore…
+
+Il s'agit d'une analyse géopolitique.
+
+Pas d'un fait établi.
+
+[ton:calme]
+
+Macgregor affirme notamment que les perturbations énergétiques pourraient remettre en cause le système du pétrodollar.
+
+Son raisonnement est le suivant.
+
+Pendant des décennies, le commerce international du pétrole a été fortement lié au dollar.
+
+Si les flux énergétiques se déplacent.
+
+Si certains pays commercent davantage dans d'autres monnaies.
+
+Et si les BRICS renforcent leurs échanges hors dollar…
+
+Alors le poids relatif du dollar pourrait évoluer.
+
+Mais là encore…
+
+Il faut distinguer une tendance géopolitique d'une disparition annoncée du dollar.
+
+La première peut être observée.
+
+La seconde reste une prédiction.
+
+[ton:normal]
+
+Et cette distinction est importante.
+
+Parce que plusieurs intervenants utilisent des formulations extrêmement fortes.
+
+Ils parlent d'un bouleversement du système énergétique mondial.
+
+D'une crise qui pourrait durer.
+
+Et d'un choc qui pourrait devenir beaucoup plus large.
+
+Ces scénarios méritent d'être examinés.
+
+Mais ils ne doivent pas être confondus avec des certitudes.
+
+[ton:calme]
+
+Revenons donc à quelque chose de beaucoup plus concret.
+
+Le prix à la pompe.
+
+Une des analyses citées dans les sources évoque un diesel français autour de 2,2 à 2,6 euros le litre.
+
+Et la possibilité d'une progression vers 3 euros est évoquée.
+
+Là encore, c'est une estimation formulée dans l'entretien.
+
+Pas une garantie de prix futur.
+
+Mais imaginons simplement les conséquences économiques.
+
+Un transporteur paie plus cher.
+
+Il doit augmenter ses tarifs.
+
+Le producteur paie plus cher son transport.
+
+Il augmente ses prix.
+
+Le distributeur paie plus cher sa logistique.
+
+Il augmente ses prix.
+
+Et finalement…
+
+Le consommateur paie.
+
+[ton:normal]
+
+C'est le mécanisme classique d'un choc énergétique.
+
+Et plus la chaîne est longue…
+
+Plus les effets peuvent se multiplier.
+
+C'est pour cela que le carburant est différent d'un produit ordinaire.
+
+Lorsqu'un produit quelconque augmente de prix…
+
+On peut parfois arrêter de l'acheter.
+
+Avec l'énergie, c'est beaucoup plus compliqué.
+
+On peut réduire sa consommation.
+
+Mais une économie entière ne peut pas simplement décider d'arrêter de transporter, de produire ou de se chauffer.
+
+[ton:calme]
+
+Alors, quelles solutions sont évoquées ?
+
+Les sources présentent plusieurs pistes.
+
+La première consiste à agir sur la fiscalité.
+
+En France, les taxes représentent une part importante du prix du diesel.
+
+Une baisse temporaire de la fiscalité pourrait donc amortir une partie du choc.
+
+Mais elle aurait un coût pour les finances publiques.
+
+Et c'est précisément le problème.
+
+L'État est déjà fortement endetté.
+
+[ton:normal]
+
+Une deuxième piste concerne les capacités énergétiques françaises.
+
+Certaines sources défendent une combinaison plus importante entre nucléaire et géothermie.
+
+L'argument est simple.
+
+Le nucléaire fournit une production pilotable.
+
+La géothermie peut également fournir une énergie moins dépendante des conditions météorologiques que certaines sources intermittentes.
+
+Mais là encore, ce sont des orientations de politique énergétique.
+
+Elles ne permettent pas de résoudre en quelques semaines une crise mondiale du pétrole.
+
+[ton:calme]
+
+Une troisième piste concerne les infrastructures.
+
+Les raffineries.
+
+Les stocks.
+
+Les capacités de transport.
+
+Les routes maritimes.
+
+Les terminaux.
+
+Les réserves stratégiques.
+
+Parce qu'une crise énergétique se gère aussi avec des infrastructures physiques.
+
+Pas uniquement avec des déclarations politiques.
+
+[ton:normal]
+
+Et c'est probablement le point le plus important de toute cette histoire.
+
+On parle souvent du prix du baril.
+
+Mais le baril n'est qu'une partie du problème.
+
+Il faut pouvoir l'acheminer.
+
+Le raffiner.
+
+Transporter le produit raffiné.
+
+Le stocker.
+
+Puis le distribuer.
+
+Et enfin…
+
+Le vendre à un prix que l'économie peut supporter.
+
+[ton:calme]
+
+Une rupture sur un seul maillon peut donc provoquer des tensions sur toute la chaîne.
+
+Et lorsque plusieurs maillons sont fragilisés simultanément…
+
+Le système devient beaucoup plus vulnérable.
+
+C'est ce que les sources cherchent, chacune à leur manière, à montrer.
+
+[ton:normal]
+
+Mais il faut également garder la tête froide.
+
+Une crise énergétique ne signifie pas automatiquement un effondrement économique.
+
+Une hausse du pétrole ne signifie pas automatiquement une récession mondiale.
+
+Et un blocage temporaire d'une route maritime ne signifie pas nécessairement que 20 % du pétrole mondial disparaissent durablement.
+
+Les marchés peuvent s'adapter.
+
+Les producteurs peuvent modifier leurs flux.
+
+Les consommateurs peuvent réduire leur demande.
+
+Les gouvernements peuvent utiliser leurs réserves.
+
+Et les routes commerciales peuvent évoluer.
+
+[ton:calme]
+
+Le danger vient plutôt de la combinaison.
+
+Une perturbation maritime.
+
+Des capacités de raffinage réduites.
+
+Des stocks insuffisants.
+
+Une demande qui reste forte.
+
+Une dette publique élevée.
+
+Et une population déjà confrontée à une baisse de pouvoir d'achat.
+
+C'est cette combinaison qui peut transformer une crise énergétique en crise économique.
+
+[ton:normal]
+
+Et la France possède une vulnérabilité supplémentaire.
+
+Elle doit financer ses politiques publiques dans un contexte où le coût de sa dette augmente.
+
+Les chiffres cités dans les sources donnent une idée de la pression.
+
+Un taux d'emprunt autour de 4,1 %.
+
+Environ 64 milliards d'euros d'intérêts évoqués pour l'année.
+
+Et une inflation qui, selon l'émission consacrée à la dette, était autour de 2,5 % au moment de l'enregistrement.
+
+Encore une fois…
+
+Les chiffres dépendent de leur date et de la méthode de calcul.
+
+Mais le problème budgétaire, lui, est bien au cœur du débat.
+
+[ton:calme]
+
+Parce qu'en cas de nouveau choc énergétique…
+
+Il faudra choisir.
+
+Aider les ménages.
+
+Aider les entreprises.
+
+Réduire les taxes.
+
+Subventionner certains secteurs.
+
+Ou préserver les finances publiques.
+
+Et ces choix ne sont pas gratuits.
+
+[ton:normal]
+
+C'est également pour cela que le témoignage des pêcheurs mérite d'être entendu.
+
+Ils ne parlent pas d'une théorie économique.
+
+Ils parlent d'une entreprise qui doit décider si elle peut sortir en mer.
+
+Si le carburant coûte trop cher…
+
+Le bateau reste à quai.
+
+Et lorsqu'un bateau reste à quai…
+
+Ce n'est pas seulement son propriétaire qui perd de l'argent.
+
+Le problème touche les équipages.
+
+Les ports.
+
+Les criées.
+
+Les transformateurs.
+
+Les distributeurs.
+
+Et finalement les consommateurs.
+
+[ton:calme]
+
+La crise énergétique est donc aussi une crise de transmission.
+
+Le choc commence sur les marchés.
+
+Puis il passe dans le transport.
+
+Ensuite dans l'industrie.
+
+Puis dans l'alimentation.
+
+Et enfin dans le budget des ménages.
+
+[ton:normal]
+
+Alors, quelle est la vraie question ?
+
+Ce n'est pas simplement :
+
+« Combien coûtera le litre de diesel demain ? »
+
+La vraie question est beaucoup plus large.
+
+Combien de temps une économie peut-elle absorber un choc énergétique sans réduire sa production ?
+
+Combien de temps un État peut-il compenser la hausse des prix sans aggraver sa dette ?
 
 Et surtout…
 
-« Combien d'autres organisations présentent exactement la même faiblesse ? »
+Combien de temps peut-on attendre avant de renforcer les infrastructures qui permettent réellement de sécuriser notre approvisionnement ?
 
 [ton:calme]
 
-Parce qu'une revendication peut être fausse.
+Parce qu'un pays peut acheter du pétrole.
 
-Une attribution peut être corrigée.
+Mais il doit aussi pouvoir le recevoir.
 
-Une donnée peut être exagérée.
+Le raffiner.
 
-Mais une vulnérabilité réelle, elle, ne disparaît pas simplement parce qu'un criminel ment sur son exploit.
+Le stocker.
+
+Le transporter.
+
+Et le payer.
+
+Et chacune de ces étapes dépend de décisions économiques et géopolitiques qui dépassent largement la simple station-service.
 
 [ton:normal]
 
-Alors ne partagez pas cette vidéo simplement parce que le titre fait peur.
+Alors ne regardez pas uniquement le prix affiché à la pompe.
 
-Partagez-la pour une raison plus utile.
+Regardez ce qu'il y a derrière.
 
-Pour rappeler aux entreprises, aux administrations et aux particuliers que la cybersécurité ne commence pas le jour où les données sont publiées.
+Le pétrole.
 
-Elle commence avant.
+Le raffinage.
 
-Vérifiez vos accès distants.
+Les routes maritimes.
 
-Révoquez les anciens comptes.
+Le gaz.
 
-Activez l'authentification multifacteur.
+Les stocks.
 
-Surveillez les identifiants compromis.
+La dette.
 
-Et surtout, sauvegardez vos données hors ligne lorsque c'est possible.
+L'industrie.
+
+Et la géopolitique.
+
+Tout est lié.
 
 [ton:calme]
 
-Parce que le prochain incident ne sera peut-être pas spectaculaire.
+Et surtout…
 
-Il commencera peut-être par un simple compte compromis.
+Ne confondez pas un scénario avec une certitude.
 
-Un seul.
+Vérifiez les chiffres.
 
-Et parfois, c'est tout ce qu'il faut.
+Regardez les dates.
+
+Distinguez les faits des analyses.
+
+Et lorsque quelqu'un vous annonce l'effondrement imminent du système mondial…
+
+Demandez simplement :
+
+« Sur quelles données ? »
 
 [ton:normal]
 
-Suivez les faits.
+Parce que la crise énergétique est suffisamment sérieuse.
 
-Vérifiez les revendications.
+Nous n'avons pas besoin d'en inventer davantage pour comprendre le danger.
 
-Ne confondez pas une accusation avec une preuve.
+Et si cette crise doit réellement devenir le prochain grand choc économique…
 
-Mais ne sous-estimez jamais une vulnérabilité réelle.
+Le meilleur moment pour s'y préparer n'est pas lorsque les stations commencent à fermer.
 
-C'est précisément là que commence la défense.
+C'est avant.
 
+Alors surveillez les prix.
 
-A bon entendeur.
+Surveillez les stocks.
 
+Surveillez les décisions gouvernementales.
+
+Et surtout…
+
+Surveillez les infrastructures dont dépend votre quotidien.
+
+Parce qu'au bout de la chaîne énergétique…
+
+Il n'y a pas seulement un baril de pétrole.
+
+Il y a votre travail.
+
+Votre alimentation.
+
+Votre transport.
+
+Et votre pouvoir d'achat.
+
+A bon entendeur 
