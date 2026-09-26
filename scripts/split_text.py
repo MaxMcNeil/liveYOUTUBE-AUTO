@@ -31,11 +31,6 @@ import json
 import re
 import sys
 
-# Découpage en phrases : on coupe après ".", "!", "?" ou "…" suivi d'un
-# espace/saut de ligne. Reste volontairement simple (pas de gestion fine
-# des abréviations type "M." ou "etc.") — un léger sur-découpage à ces
-# endroits n'est pas grave, la contrainte dure est juste de ne jamais
-# couper EN PLEIN MILIEU d'une phrase.
 # Découpage en phrases : on coupe après "." "!" ou "?" suivi d'un
 # espace/saut de ligne. Le "…" n'en fait volontairement PAS partie : il
 # sert souvent de pause DANS une phrase ("Premièrement… la remise..."),
