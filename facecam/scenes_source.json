@@ -1,0 +1,274 @@
+{
+  "channel": { "name_top": "LE JOURNAL DU", "name_main": "NON", "edition": "" },
+  "ticker_label": "EN BREF",
+  "ticker_speed": 130,
+  "ring_color": "accent",
+  "ticker": [
+    { "tag": "JUSTICE", "text": "Harvey Weinstein condamné à quinze ans de prison" },
+    { "tag": "JUSTICE", "text": "Saad Lamjarred, peine alourdie à dix ans en appel" },
+    { "tag": "JUSTICE", "text": "Loïk Le Priol condamné à vingt-six ans de réclusion" },
+    { "tag": "CYBER", "text": "Plus de soixante revendications de rançongiciels recensées" },
+    { "tag": "JUSTICE", "text": "Le général Benoît Puga placé en garde à vue" },
+    { "tag": "CYBER", "text": "QILIN revendique une intrusion chez Agora" },
+    { "tag": "JUSTICE", "text": "Achraf Hakimi renvoyé devant une cour criminelle" },
+    { "tag": "JUSTICE", "text": "Naples : trois millions d'euros cachés dans les murs" }
+  ],
+  "scenes": [
+    {
+      "anchor": "Regardez bien ce qui se joue en ce moment",
+      "category": "JUSTICE",
+      "stage": { "type": "headline", "kicker": "À LA UNE", "icon": "search",
+        "title": "Ce qui se joue en ce moment",
+        "lines": ["Pas dans les plateaux télé", "Dans les prétoires, les perquisitions, le dark web"] },
+      "side": { "type": "facts", "label": "AU SOMMAIRE", "icon": "doc", "title": "Deux fronts, un même moment",
+        "items": ["La justice qui condamne", "Le crime organisé qui s'adapte", "Le cyber qui industrialise le chantage"] },
+      "lower": "Dans les prétoires, les perquisitions, et le dark web"
+    },
+    {
+      "anchor": "Harvey Weinstein vient d'être condamné",
+      "category": "JUSTICE",
+      "stage": { "type": "headline", "icon": "gavel", "kicker": "DEUX DÉCISIONS, UN WEEK-END",
+        "title": "La notoriété ne protège plus",
+        "lines": ["Harvey Weinstein condamné à quinze ans de prison", "Saad Lamjarred, peine alourdie à dix ans en appel"] },
+      "side": { "type": "keyfigures", "title": "Deux peines, le même week-end",
+        "items": [{ "value": "15 ans", "label": "Harvey Weinstein" }, { "value": "10 ans", "label": "Saad Lamjarred" }] },
+      "lower": "Weinstein condamné à quinze ans de prison pour agression sexuelle"
+    },
+    {
+      "anchor": "Pendant que ces peines sont prononcées",
+      "category": "JUSTICE",
+      "stage": { "type": "stat", "kicker": "MEURTRE DE FEDERICO MARTIN ARAMBURU", "value": "26", "unit": "ANS",
+        "caption": "Loïk Le Priol condamné à la réclusion criminelle",
+        "sub": "Romain Bouvier, co-accusé, écope de dix-neuf ans" },
+      "side": { "type": "keyfigures", "title": "Le duo condamné",
+        "items": [{ "value": "26 ans", "label": "Loïk Le Priol" }, { "value": "19 ans", "label": "Romain Bouvier" }] },
+      "lower": "Le Priol condamné à vingt-six ans de réclusion criminelle"
+    },
+    {
+      "anchor": "À Nancy, un septuagénaire est condamné",
+      "category": "JUSTICE",
+      "stage": { "type": "list", "kicker": "VIOLENCES SEXUELLES SUR MINEURS", "title": "Trois dossiers, trois villes",
+        "rows": [
+          { "tag": "NANCY", "text": "Septuagénaire condamné pour viols sur trois mineures", "status": "14 ANS" },
+          { "tag": "PARIS", "text": "Professeur d'anglais mis en examen et incarcéré", "status": "ENFANTS 3-5 ANS" },
+          { "tag": "ÉCOLE", "text": "Directeur du périscolaire interpellé devant les parents", "status": "EN COURS" }
+        ] },
+      "side": { "type": "facts", "label": "CE QUI EST ÉTABLI", "icon": "scale", "title": "Trois procédures distinctes",
+        "items": ["Le tribunal a tranché pour Nancy", "Mise en examen à Paris", "Interpellation publique au périscolaire"] },
+      "lower": "À Nancy, quatorze ans de prison pour viols sur trois mineures"
+    },
+    {
+      "anchor": "En Essonne, « Tonton chicha »",
+      "category": "JUSTICE",
+      "stage": { "type": "list", "kicker": "AUTRES PROCÉDURES EN COURS", "title": "La liste s'allonge",
+        "rows": [
+          { "tag": "ESSONNE", "text": "« Tonton chicha » soupçonné d'avoir violé sa protégée", "status": "SOUPÇONS" },
+          { "tag": "MAUREPAS", "text": "Principal adjoint mis en examen pour viol sur mineur", "status": "EN COURS" },
+          { "tag": "MARSEILLE", "text": "Un commissaire mis en examen pour avoir protégé des policiers", "status": "EN COURS" },
+          { "tag": "CHIRURGIE", "text": "Sydney Ohana visé par de nouvelles mises en examen", "status": "EN COURS" },
+          { "tag": "FOOTBALL", "text": "Andy Carroll affirme avoir été victime d'une agression", "status": "ACCUSATION" },
+          { "tag": "MUSIQUE", "text": "Patrick Bruel accusé de viols et harcèlement sexuel", "status": "ACCUSATION" },
+          { "tag": "FOOTBALL", "text": "Achraf Hakimi renvoyé devant une cour criminelle", "status": "SERA JUGÉ" }
+        ] },
+      "side": { "type": "tags", "label": "PROFILS CONCERNÉS", "icon": "alert", "title": "Des mondes très différents",
+        "items": ["Éducation", "Police", "Chirurgie", "Sport", "Musique"] },
+      "lower": "Achraf Hakimi renvoyé devant une cour criminelle pour viol"
+    },
+    {
+      "anchor": "Les cambrioleurs de François Hollande",
+      "category": "JUSTICE", "accent": "#ff6b5e",
+      "stage": { "type": "versus", "kicker": "LE CONTRASTE",
+        "left": { "label": "Pour une montre et un iPad", "value": "18 MOIS", "caption": "Cambrioleurs de Hollande et Gayet, avec sursis" },
+        "right": { "label": "Pour un meurtre", "value": "26 ANS", "caption": "Loïk Le Priol, réclusion criminelle ferme" } },
+      "side": { "type": "facts", "label": "ANALYSE", "icon": "scale", "title": "Deux poids, deux mesures ?",
+        "items": ["Même semaine judiciaire", "Peines sans commune mesure", "Nature des faits très différente"] },
+      "lower": "Dix-huit mois avec sursis pour le cambriolage de Hollande et Gayet"
+    },
+    {
+      "anchor": "un notaire de Caen est mis en examen",
+      "category": "JUSTICE",
+      "stage": { "type": "list", "kicker": "CORRUPTION ET FRAUDE", "title": "Le système sous le feu",
+        "rows": [
+          { "tag": "CAEN", "text": "Notaire mis en examen pour escroquerie et blanchiment", "status": "EN COURS" },
+          { "tag": "GÉNÉRAL", "text": "Benoît Puga placé en garde à vue, soupçons de corruption", "status": "GARDE À VUE" }
+        ] },
+      "side": { "type": "facts", "label": "CE QUI EST VISÉ", "icon": "coin", "title": "Légions d'honneur suspectes",
+        "items": ["Attribution des décorations", "Un général cinq étoiles", "Le système entier questionné"] },
+      "lower": "Le général Benoît Puga placé en garde à vue"
+    },
+    {
+      "anchor": "Deux infirmiers libéraux auraient monté",
+      "category": "JUSTICE",
+      "stage": { "type": "stat", "kicker": "FRAUDE À LA SÉCU", "value": "1,7", "unit": "M€",
+        "caption": "Préjudice présumé de deux infirmiers libéraux",
+        "sub": "Vingt-deux suspects jugés pour une fraude aux mutuelles chez les opticiens parisiens" },
+      "side": { "type": "keyfigures", "title": "Deux fraudes, un parquet",
+        "items": [{ "value": "1,7 M€", "label": "fraude Sécu" }, { "value": "22", "label": "suspects opticiens" }] },
+      "lower": "Un million sept cent mille euros de préjudice présumé"
+    },
+    {
+      "anchor": "À Naples, kalachnikovs, montres de luxe",
+      "category": "CRIME",
+      "stage": { "type": "list", "kicker": "CRIME ORGANISÉ", "title": "Perquisitions et trafics",
+        "rows": [
+          { "tag": "NAPLES", "text": "Kalachnikovs et trois millions d'euros cachés dans les murs", "status": "SAISIE" },
+          { "tag": "GO-FAST", "text": "Conducteur condamné après avoir percuté la police", "status": "5 ANS FERME" },
+          { "tag": "VAL-DE-MARNE", "text": "Wahid B. jugé pour un trafic avec un cartel colombien", "status": "EN COURS" },
+          { "tag": "LOT-ET-GARONNE", "text": "Trois kilos de cannabis produits à domicile", "status": "GARDE À VUE" }
+        ] },
+      "side": { "type": "facts", "label": "CE QUI A ÉTÉ SAISI", "icon": "alert", "title": "Le butin d'une perquisition",
+        "items": ["Armes de guerre", "Montres de luxe", "Trois millions d'euros en liquide"] },
+      "lower": "À Naples, trois millions d'euros cachés dans les murs"
+    },
+    {
+      "anchor": "Les policiers aussi sont dans le collimateur",
+      "category": "POLICE",
+      "stage": { "type": "list", "kicker": "QUAND CE SONT DES POLICIERS", "title": "Trois procédures internes",
+        "rows": [
+          { "tag": "BRAV-M", "text": "Deux policiers condamnés après un accident à 130 km/h", "status": "CONDAMNÉS" },
+          { "tag": "VANDALISME", "text": "Un policier condamné pour un \"coup de sang\"", "status": "CONDAMNÉ" },
+          { "tag": "INCENDIE", "text": "Douze ans pour avoir mis le feu à son propre domicile", "status": "12 ANS" }
+        ] },
+      "side": { "type": "facts", "label": "LE DÉTAIL", "icon": "siren", "title": "Sa femme, ses quatre enfants",
+        "items": ["Accident en plein Paris", "Un geste de colère isolé", "Une mise en danger familiale"] },
+      "lower": "Accident à cent trente kilomètres par heure en plein Paris"
+    },
+    {
+      "anchor": "L'influenceur Mounim Sabhi",
+      "category": "JUSTICE",
+      "stage": { "type": "list", "kicker": "ENCORE D'AUTRES DOSSIERS", "title": "La séquence continue",
+        "rows": [
+          { "tag": "INFLUENCEUR", "text": "Mounim Sabhi, violences filmées en direct", "status": "DÉTENTION" },
+          { "tag": "ANIMAUX", "text": "Deux sœurs condamnées après l'attaque de leurs chiens", "status": "CONDAMNÉES" },
+          { "tag": "GIRONDE", "text": "Intrusion dans un lycée, bracelet électronique", "status": "3 MOIS" }
+        ] },
+      "side": { "type": "tags", "label": "PROFILS", "icon": "doc", "title": "Des situations très variées",
+        "items": ["Réseaux sociaux", "Garde d'animaux", "Milieu scolaire"] },
+      "lower": "L'influenceur Mounim Sabhi placé en détention provisoire"
+    },
+    {
+      "anchor": "Et les affaires plus anciennes remontent",
+      "category": "JUSTICE",
+      "stage": { "type": "timeline", "kicker": "DES DOSSIERS QUI REFONT SURFACE", "title": "Des années plus tard",
+        "items": [
+          { "date": "16 ANS APRÈS", "text": "Meurtre de l'île de la Comtesse, le mari jugé" },
+          { "date": "5 ANS APRÈS", "text": "Enlèvement de Mia, Rémy Daillet jugé" },
+          { "date": "CRÉPOL", "text": "Onze jeunes renvoyés aux assises, circonstance de racisme" },
+          { "date": "TOUR EIFFEL", "text": "Attentat de 2023, investigations rouvertes" }
+        ] },
+      "side": { "type": "facts", "label": "ÉGALEMENT EN COURS", "icon": "scale", "title": "Deux autres procédures",
+        "items": ["Troisième procès pour Magnanville", "Treize Novembre : auditions en Belgique avant une possible libération"] },
+      "lower": "Meurtre de l'île de la Comtesse : le mari jugé seize ans après"
+    },
+    {
+      "anchor": "Un couple d'octogénaires est tué",
+      "category": "CRIME",
+      "stage": { "type": "list", "kicker": "FAITS DIVERS DE LA SEMAINE", "title": "Six vies, six drames",
+        "rows": [
+          { "tag": "PYRÉNÉES", "text": "Couple d'octogénaires tué par un voisin de 90 ans", "status": "FUSIL DE CHASSE" },
+          { "tag": "AUBE", "text": "Sexagénaire tué à domicile, agresseurs en fuite", "status": "RECHERCHÉS" },
+          { "tag": "PORTUGAL", "text": "Pompier de vingt-quatre ans tuée en feu de forêt", "status": "DÉCÈS" },
+          { "tag": "DIJON", "text": "Féminicide présumé, compagne retrouvée morte", "status": "INTERPELLÉ" }
+        ] },
+      "side": { "type": "facts", "label": "AUSSI CETTE SEMAINE", "icon": "siren", "title": "Deux autres victimes",
+        "items": ["Cycliste tuée en Saône-et-Loire, chauffard positif à la cocaïne", "Agresseur d'un maire de Seine-et-Marne écroué"] },
+      "lower": "Une femme pompier de vingt-quatre ans tuée au Portugal"
+    },
+    {
+      "anchor": "Et dans un tout autre registre",
+      "category": "MONDE",
+      "stage": { "type": "headline", "icon": "globe", "kicker": "AFFAIRE RUPNIK",
+        "title": "Les mosaïques occultées à Lourdes",
+        "lines": ["Pour la venue du pape Léon XIV", "La cité mariale a réinventé son modèle économique"] },
+      "side": { "type": "facts", "label": "CONTEXTE", "icon": "doc", "title": "Le scandale Marko Rupnik",
+        "items": ["Mosaïques de la basilique du Rosaire", "Occultées pour la visite papale", "Lourdes avait frôlé la faillite"] },
+      "lower": "À Lourdes, les mosaïques occultées pour la venue du pape"
+    },
+    {
+      "anchor": "Voilà pour les tribunaux",
+      "category": "CYBER",
+      "stage": { "type": "headline", "icon": "shield", "kicker": "CHANGEMENT DE FRONT",
+        "title": "Le cyber ne s'arrête jamais",
+        "lines": ["Pendant que la justice juge", "Un autre combat se joue en continu"] },
+      "side": { "type": "facts", "label": "CE QUI SUIT", "icon": "lock", "title": "Le chantage aux données",
+        "items": ["Des dizaines de cibles par semaine", "Des entreprises françaises touchées", "Une mécanique toujours identique"] },
+      "lower": "Un autre front ne s'arrête jamais : le cyber"
+    },
+    {
+      "anchor": "En quelques jours à peine, plus de soixante",
+      "category": "CYBER",
+      "stage": { "type": "stat", "kicker": "RANÇONGICIELS", "value": "60", "unit": "+",
+        "caption": "Revendications recensées en quelques jours",
+        "sub": "QILIN, WALLSTREET, EVEREST, METAENCRYPTOR, BARRACUDA, DRAGONFORCE" },
+      "side": { "type": "tags", "label": "GROUPES ACTIFS", "icon": "lock", "title": "Les acteurs du moment",
+        "items": ["QILIN", "WALLSTREET", "EVEREST", "METAENCRYPTOR", "BARRACUDA", "DRAGONFORCE"] },
+      "lower": "Plus de soixante revendications de rançongiciels recensées"
+    },
+    {
+      "anchor": "Plusieurs entreprises françaises sont directement touchées",
+      "category": "CYBER",
+      "stage": { "type": "timeline", "kicker": "CIBLES FRANÇAISES", "title": "Quatre secteurs touchés",
+        "items": [
+          { "date": "QILIN", "text": "Agora, coopérative agricole" },
+          { "date": "ZAWOO", "text": "Agiliance puis Francare, services et santé" },
+          { "date": "DRAGONFORCE", "text": "Groupe BMGP, secteur manufacturier" },
+          { "date": "MEDUSALOCKER", "text": "Aokkef" }
+        ] },
+      "side": { "type": "facts", "label": "LE CONSTAT", "icon": "shield", "title": "Aucun secteur épargné",
+        "items": ["Agriculture", "Santé", "Industrie manufacturière", "Services professionnels"] },
+      "lower": "QILIN revendique une intrusion chez Agora, coopérative agricole"
+    },
+    {
+      "anchor": "À l'international, le mode opératoire est toujours le même",
+      "category": "CYBER",
+      "stage": { "type": "list", "kicker": "À L'ÉCHELLE MONDIALE", "title": "Une mécanique identique partout",
+        "rows": [
+          { "tag": "INTRUSION", "text": "Accès obtenu discrètement dans le système ciblé", "status": "ÉTAPE 1" },
+          { "tag": "MENACE", "text": "Publication des données annoncée publiquement", "status": "ÉTAPE 2" },
+          { "tag": "ULTIMATUM", "text": "Délai de paiement fixé par les attaquants", "status": "ÉTAPE 3" }
+        ] },
+      "side": { "type": "facts", "label": "CIBLES CITÉES", "icon": "globe", "title": "Quelques noms touchés",
+        "items": ["Cipher.systems", "International Chemical", "Securitas, Electrolux, GE Vernova"] },
+      "lower": "La liste des cibles s'allonge chaque semaine"
+    },
+    {
+      "anchor": "Voilà le contraste",
+      "category": "CYBER", "accent": "#ff6b5e",
+      "stage": { "type": "versus", "kicker": "DEUX TEMPORALITÉS",
+        "left": { "label": "Le temps de la justice", "value": "ANNÉES", "caption": "Quinze, dix, vingt-six, dix-neuf, quatorze, douze" },
+        "right": { "label": "Le temps du cybercrime", "value": "HEURES", "caption": "Intrusion, menace, ultimatum" } },
+      "side": { "type": "facts", "label": "LE CONSTAT", "icon": "alert", "title": "Deux rythmes qui s'affrontent",
+        "items": ["Les uns passent devant les juges", "Les autres publient sur le dark web"] },
+      "lower": "Les peines s'écrivent en années, les attaques en heures"
+    },
+    {
+      "anchor": "La lecture stratégique est simple",
+      "category": "JUSTICE",
+      "stage": { "type": "quote", "text": "La justice pénale avance. Le crime organisé continue de tester les failles. Le cyber industrialise le chantage.",
+        "by": "Lecture stratégique de la séquence" },
+      "side": { "type": "facts", "label": "TROIS DYNAMIQUES", "icon": "scale", "title": "En même temps",
+        "items": ["La justice condamne et incarcère", "Les cartels passent les frontières", "Le cybercrime frappe par dizaines"] },
+      "lower": "Trois dynamiques, un même moment"
+    },
+    {
+      "anchor": "D'un côté, un État qui juge",
+      "category": "JUSTICE", "accent": "#ff6b5e",
+      "stage": { "type": "versus", "kicker": "LA DOUBLE DYNAMIQUE",
+        "left": { "label": "Qui juge", "value": "L'ÉTAT", "caption": "Procédures, condamnations, incarcérations" },
+        "right": { "label": "Qui s'adapte", "value": "LE CRIME", "caption": "Plus vite que les procédures" } },
+      "side": { "type": "facts", "label": "EN RÉSUMÉ", "icon": "alert", "title": "Deux vitesses",
+        "items": ["Les peines s'écrivent en années", "Les attaques s'écrivent en heures"] },
+      "lower": "Un État qui juge, un écosystème criminel qui s'adapte"
+    },
+    {
+      "anchor": "Ce que vous venez d'entendre n'est pas",
+      "category": "JUSTICE",
+      "stage": { "type": "headline", "icon": "doc", "kicker": "SYNTHÈSE",
+        "title": "La carte d'un même moment",
+        "lines": ["La justice qui resserre sur certains dossiers", "Le crime qui teste les failles", "Le cyber qui industrialise le chantage"] },
+      "side": { "type": "facts", "label": "EN TEMPS RÉEL", "icon": "search", "title": "Une séquence qui continue",
+        "items": ["Dans les prétoires", "Dans les perquisitions", "Sur le dark web"] },
+      "lower": "La séquence est en cours, elle ne s'arrête pas"
+    }
+  ]
+}
