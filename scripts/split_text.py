@@ -118,8 +118,106 @@ def normalize_punctuation(text: str) -> str:
     # à un moteur TTS et peut perturber la génération.
     text = re.sub(r"([!?])\1+", r"\1", text)
     # "..." (points de suspension tapés à la main) -> "…" (un seul
-    # caractère, déjà géré comme frontière de phrase ci-dessus).
+    # caractère). Ne devient PAS une frontière de phrase (voir
+    # SENTENCE_SPLIT_RE plus haut) — reste une pause interne à l'énoncé.
     text = re.sub(r"\.{3,}", "…", text)
+    return text
+
+
+# --- Nombres et abréviations mal prononcés par Chatterbox --------------
+# Remontées de terrain concrètes : les années en chiffres ("2021") et
+# les abréviations d'unité ("km/h") sont mal lues. Corrigé ici plutôt
+# que de compter sur chaque texte pour bien faire dès l'écriture — les
+# futurs textes en profitent automatiquement, même non relus.
+#
+# Portée volontairement limitée (pas un convertisseur nombre->lettres
+# général) : ça couvre le cas signalé (années 1000-2999, "km/h"), pas
+# n'importe quel nombre. Le reste (montants, âges, etc.) continue à être
+# écrit en toutes lettres à la main, comme déjà pratiqué dans les textes
+# fournis.
+
+_UNITS = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
+          "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize",
+          "dix-sept", "dix-huit", "dix-neuf"]
+_TENS = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "", "quatre-vingt", ""]
+
+
+def _two_digits_to_french(n: int) -> str:
+    """0-99 en toutes lettres (règles standard, sans négociation
+    orthographique 1990 — 'quatre-vingt-dix', pas 'quatrevingtdix')."""
+    if n < 20:
+        return _UNITS[n]
+    tens, unit = divmod(n, 10)
+    if tens == 7:  # 70..79 : soixante-dix, soixante et onze, soixante-douze...
+        if unit == 1:
+            return "soixante et onze"
+        return f"soixante-{_UNITS[10 + unit]}"
+    if tens == 9:  # quatre-vingt-dix..99
+        return "quatre-vingt-" + _UNITS[10 + unit]
+    base = _TENS[tens]
+    if unit == 0:
+        return base
+    if unit == 1 and tens not in (8,):  # "et un" sauf après quatre-vingt
+        return f"{base} et un"
+    return f"{base}-{_UNITS[unit]}"
+
+
+def _year_to_french_words(year: int) -> str:
+    """Années 1000-2999 en toutes lettres, façon 'deux mille vingt-six'
+    (usage courant actuel), pas 'vingt-cent-vingt-six'."""
+    millier, reste = divmod(year, 1000)
+    millier_txt = "mille" if millier == 1 else f"{_UNITS[millier]} mille"
+    if reste == 0:
+        return millier_txt
+    centaine, dizaine = divmod(reste, 100)
+    parts = [millier_txt]
+    if centaine:
+        parts.append("cent" if centaine == 1 else f"{_UNITS[centaine]} cent")
+    if dizaine:
+        parts.append(_two_digits_to_french(dizaine))
+    return " ".join(parts)
+
+
+YEAR_RE = re.compile(r"\b(1[0-9]{3}|2[0-9]{3})\b")
+
+
+def expand_years(text: str) -> str:
+    return YEAR_RE.sub(lambda m: _year_to_french_words(int(m.group(0))), text)
+
+
+KMH_RE = re.compile(r"(\d+)\s*km\s*/\s*h\b", re.IGNORECASE)
+
+
+def expand_kmh(text: str) -> str:
+    # Ne convertit QUE l'unité ; le nombre lui-même reste à écrire en
+    # toutes lettres à la main dans le texte source (pratique déjà
+    # suivie). Ex: "130km/h" -> "130 kilomètres par heure" (encore à
+    # écrire "cent trente" à la main si besoin).
+    return KMH_RE.sub(r"\1 kilomètres par heure", text)
+
+
+# Mots ou expressions dont la prononciation Chatterbox a été observée
+# comme mauvaise en test réel. Dictionnaire à enrichir au fil de l'eau —
+# la correction proposée pour "kalachnikov" est une PREMIÈRE PISTE non
+# testée (pas de moyen de vérifier la prononciation dans cet
+# environnement), à confirmer ou ajuster après écoute réelle.
+PROBLEM_WORD_FIXES = {
+    "kalachnikov": "kalachnikov",  # TODO: piste non validée, à tester puis remplacer si besoin
+}
+
+
+def apply_problem_word_fixes(text: str) -> str:
+    for bad, fixed in PROBLEM_WORD_FIXES.items():
+        if fixed == bad:
+            continue  # pas encore de correction validée, on ne touche à rien
+        text = re.sub(re.escape(bad), fixed, text, flags=re.IGNORECASE)
+    return text
+
+
+def normalize_pronunciation(text: str) -> str:
+    text = expand_years(text)
+    text = expand_kmh(text)
+    text = apply_problem_word_fixes(text)
     return text
 
 
@@ -128,6 +226,7 @@ HAS_LETTER_RE = re.compile(r"[^\W\d_]", re.UNICODE)  # au moins une vraie lettre
 
 def split_sentences(text: str):
     text = normalize_punctuation(text.strip())
+    text = normalize_pronunciation(text)
     if not text:
         return []
     # Normalise les espaces multiples/retours à la ligne à l'intérieur
@@ -187,7 +286,14 @@ def split_long_sentence(sentence: str, tone: str, max_len: int = MAX_CHARS_PER_U
     packed = []
     current = ""
     for clause in clauses:
-        candidate = f"{current}, {clause}".strip(", ").strip() if current else clause
+        # current se termine déjà par la ponctuation d'origine (le split
+        # par lookbehind la laisse attachée) : ne PAS en rajouter une,
+        # sinon on double la virgule ("Cipher.systems,, International").
+        if current:
+            sep = " " if current.rstrip()[-1:] in ",;:—–…" else ", "
+            candidate = f"{current}{sep}{clause}"
+        else:
+            candidate = clause
         if current and len(candidate) > max_len:
             packed.append(current)
             current = clause
