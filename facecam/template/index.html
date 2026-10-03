@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le Journal du NON — habillage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Icônes (SVG inline, aucun fichier externe) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-scale" viewBox="0 0 64 64"><path d="M32 8v44M20 54h24M10 20h44M10 20 2 38h16zM54 20l-8 18h16z"/><path d="M2 38a8 6 0 0 0 16 0M46 38a8 6 0 0 0 16 0"/></symbol>
+    <symbol id="i-gavel" viewBox="0 0 64 64"><rect x="14" y="8" width="28" height="15" rx="3" transform="rotate(35 28 15)"/><path d="M31 30 54 52M8 58h28"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 64 64"><path d="M32 5l20 8v14c0 14-9 25-20 31C21 52 12 41 12 27V13z"/><rect x="24" y="28" width="16" height="12" rx="2"/><path d="M27 28v-4a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-siren" viewBox="0 0 64 64"><path d="M16 44v-8a16 16 0 0 1 32 0v8M10 44h44v9H10zM32 6v6M10 14l4 4M54 14l-4 4"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 64 64"><circle cx="32" cy="32" r="23"/><path d="M9 32h46M32 9c-11 12-11 34 0 46M32 9c11 12 11 34 0 46"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 64 64"><path d="M15 5h24l11 11v43H15zM39 5v11h11M23 30h20M23 40h20M23 50h12"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 64 64"><path d="M32 7 59 55H5zM32 26v15M32 47v2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 64 64"><circle cx="28" cy="28" r="17"/><path d="M41 41l17 17"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="23"/><path d="M41 22a13 13 0 1 0 0 20M18 28h19M18 36h19"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 64 64"><rect x="12" y="28" width="40" height="28" rx="4"/><path d="M20 28v-7a12 12 0 0 1 24 0v7M32 38v9"/></symbol>
+  </defs>
+</svg>
+
+<div id="root">
+  <div class="bg-dots"></div>
+  <div class="bg-sheen"></div>
+
+  <!-- Bandeau du haut -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark"></div>
+      <div class="brand-text"><span class="a" id="brand-a">LE JOURNAL DU</span><span class="b" id="brand-b">NON</span></div>
+    </div>
+    <div class="top-right">
+      <span class="edition" id="edition"></span>
+      <span class="cat-chip" id="cat-chip"></span>
+    </div>
+  </header>
+
+  <!-- Zone d'habillage principale -->
+  <main class="stage" id="stage">
+    <div class="prog"><i id="prog"></i></div>
+  </main>
+
+  <!-- Panneau latéral : fiches, données, contexte -->
+  <aside class="side" id="side"></aside>
+
+  <!-- Avatar (cercle) + anneau audio-réactif -->
+  <canvas class="ring" id="ring" width="360" height="360"></canvas>
+  <div class="avatar"><video id="avatar" loop muted autoplay playsinline preload="auto"></video></div>
+
+  <!-- Titre courant (lower third) -->
+  <section class="lower" id="lower">
+    <div class="lab"><svg><use href="#i-doc"/></svg><span id="lower-cat">À LA UNE</span></div>
+    <div class="txt"><span id="lower-txt"></span></div>
+  </section>
+
+  <!-- Fil d'information -->
+  <footer class="ticker">
+    <div class="lab" id="ticker-lab">EN BREF</div>
+    <div class="win"><div class="track" id="track"></div></div>
+  </footer>
+
+  <div class="start-overlay" id="start" hidden><span>▶ Cliquer pour démarrer</span></div>
+</div>
+
+<audio id="voice" preload="auto"></audio>
+
+<script src="demo_content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

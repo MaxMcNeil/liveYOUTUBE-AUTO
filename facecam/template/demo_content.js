@@ -1,0 +1,90 @@
+/* Contenu de démonstration — sert à valider le template sans narration
+   réelle. En production, ce fichier est remplacé par un JSON généré à
+   partir du texte narré (voir Phase 3 : génération automatique des
+   fiches depuis voice_script.txt). */
+window.__DEMO_CONTENT__ = {
+  channel: { name_top: "LE JOURNAL DU", name_main: "NON", edition: "29 septembre" },
+  ticker_label: "EN BREF",
+  ticker_speed: 130,
+  ring_color: "accent",
+  ticker: [
+    { tag: "JUSTICE", text: "Harvey Weinstein condamné à quinze ans de prison" },
+    { tag: "JUSTICE", text: "Saad Lamjarred, peine alourdie à dix ans en appel" },
+    { tag: "CYBER", text: "Plus de soixante revendications recensées cette semaine" },
+    { tag: "JUSTICE", text: "Le Priol condamné à vingt-six ans de réclusion" },
+    { tag: "CYBER", text: "QILIN revendique une intrusion chez Agora" },
+    { tag: "JUSTICE", text: "Le général Puga placé en garde à vue" },
+  ],
+  scenes: [
+    { t: 0, category: "JUSTICE",
+      stage: { type: "headline", kicker: "À LA UNE", icon: "gavel",
+        title: "Deux peines tombent le même week-end",
+        lines: ["Weinstein condamné à quinze ans de prison", "Lamjarred alourdi à dix ans en appel"] },
+      side: { type: "facts", label: "CE QU'IL FAUT SAVOIR", icon: "doc", title: "Deux dossiers, deux pays",
+        items: ["Agression sexuelle d'une assistante de production", "Viol à Paris, peine alourdie en appel", "Deux décisions rendues presque simultanément"] },
+      lower: "Weinstein condamné à quinze ans de prison pour agression sexuelle" },
+
+    { t: 9, category: "JUSTICE",
+      stage: { type: "stat", kicker: "PEINE MAXIMALE", value: "26", unit: "ANS",
+        caption: "Loïk Le Priol condamné pour le meurtre de Federico Martin Aramburu",
+        sub: "Romain Bouvier, co-accusé, écope de dix-neuf ans" },
+      side: { type: "keyfigures", title: "Le duo condamné",
+        items: [{ value: "26 ans", label: "Le Priol" }, { value: "19 ans", label: "Bouvier" }, { value: "1", label: "victime : Federico Martin Aramburu" }] },
+      lower: "Le Priol condamné à vingt-six ans de réclusion criminelle" },
+
+    { t: 18, category: "JUSTICE",
+      stage: { type: "list", kicker: "AUTRES DOSSIERS", title: "La séquence continue",
+        rows: [
+          { tag: "NANCY", text: "Septuagénaire condamné, viols sur trois mineures", status: "14 ANS" },
+          { tag: "PARIS", text: "Professeur d'anglais mis en examen", status: "INCARCÉRÉ" },
+          { tag: "MARSEILLE", text: "Un commissaire mis en examen", status: "EN COURS" },
+          { tag: "CAEN", text: "Notaire, escroquerie et blanchiment", status: "EN COURS" },
+        ] },
+      side: { type: "tags", title: "Dossiers en cours",
+        items: ["Agressions sexuelles", "Fraude à la Sécu", "Corruption", "Légion d'honneur"] },
+      lower: "À Nancy, quatorze ans de prison pour viols sur trois mineures" },
+
+    { t: 27, category: "JUSTICE",
+      stage: { type: "versus", kicker: "LE CONTRASTE",
+        left: { label: "Pour une montre et un iPad", value: "18 MOIS", caption: "Cambrioleurs de Hollande et Gayet, avec sursis" },
+        right: { label: "Pour un meurtre", value: "26 ANS", caption: "Le Priol, réclusion criminelle ferme" } },
+      side: { type: "facts", label: "ANALYSE", icon: "scale", title: "Deux poids, deux mesures ?",
+        items: ["Même semaine judiciaire", "Peines sans commune mesure", "Nature des faits très différente"] },
+      lower: "Dix-huit mois avec sursis pour le cambriolage de Hollande et Gayet" },
+
+    { t: 36, category: "CYBER",
+      stage: { type: "headline", kicker: "FRONT CYBER", icon: "shield",
+        title: "Le chantage aux données s'industrialise",
+        lines: ["Plus de soixante revendications en quelques jours", "Santé, agriculture, industrie, services"] },
+      side: { type: "facts", label: "GROUPES ACTIFS", icon: "lock", title: "Les acteurs du moment",
+        items: ["QILIN, WALLSTREET, EVEREST", "METAENCRYPTOR, BARRACUDA", "DRAGONFORCE, ZAWOO"] },
+      lower: "Plus de soixante revendications de rançongiciels recensées" },
+
+    { t: 45, category: "CYBER",
+      stage: { type: "timeline", kicker: "CIBLES FRANÇAISES", title: "Une semaine de revendications",
+        items: [
+          { date: "QILIN", text: "Agora, coopérative agricole" },
+          { date: "ZAWOO", text: "Agiliance puis Francare" },
+          { date: "DRAGONFORCE", text: "Groupe BMGP" },
+          { date: "MEDUSALOCKER", text: "Aokkef" },
+        ] },
+      side: { type: "keyfigures", title: "En chiffres",
+        items: [{ value: "60+", label: "revendications recensées" }, { value: "4", label: "secteurs français touchés" }] },
+      lower: "QILIN revendique une intrusion chez Agora, coopérative agricole" },
+
+    { t: 54, category: "JUSTICE",
+      stage: { type: "quote", text: "Une revendication criminelle n'est pas automatiquement une compromission confirmée.",
+        by: "Principe d'attribution en cybersécurité" },
+      side: { type: "facts", label: "MÉTHODE", icon: "search", title: "Fait, revendication, hypothèse",
+        items: ["Toujours distinguer les trois niveaux", "Une capacité n'est pas une preuve d'usage", "L'attribution reste prudente"] },
+      lower: "Attribution : la prudence méthodologique s'impose" },
+
+    { t: 63, category: "JUSTICE", accent: "#ff6b5e",
+      stage: { type: "stat", kicker: "SYNTHÈSE", value: "42", unit: "",
+        caption: "Dossiers judiciaires ouverts cette semaine",
+        sub: "De l'agression sexuelle à la fraude, en passant par le crime organisé" },
+      side: { type: "facts", label: "LA DOUBLE DYNAMIQUE", icon: "alert", title: "Justice / Cybercrime",
+        items: ["Les peines s'écrivent en années", "Les attaques s'écrivent en heures", "Deux temporalités, un seul moment"] },
+      lower: "La séquence est en cours et ne s'arrête pas" },
+  ],
+};
