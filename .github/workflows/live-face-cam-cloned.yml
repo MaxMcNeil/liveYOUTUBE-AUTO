@@ -1,0 +1,107 @@
+name: Live — Face Cam Cloné (diffusion YouTube réelle)
+
+# Diffuse réellement sur YouTube : avatar en PiP + habillage synchronisé
+# sur la narration clonée. S'arrête pile quand la narration se termine.
+#
+# ⚠️ Diffuse pour de vrai — teste d'abord avec le workflow
+# "Test — Live Face Cam Cloné" pour vérifier le rendu avant de lancer
+# celui-ci. Ne touche à aucun autre workflow/live existant.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  go_live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installe ffmpeg, Xvfb, Chromium, Node
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg xvfb chromium-browser || sudo apt-get install -y -qq ffmpeg xvfb chromium
+          pip install --quiet --break-system-packages playwright
+          python3 -m playwright install chromium --with-deps
+          npm install
+
+      - name: Télécharge la narration clonée (voice_ia) + le minutage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p voice_ia
+          gh release download voice_ia --repo "${{ github.repository }}" -D voice_ia -p "*"
+
+      - name: Concatène les morceaux de voix en une seule narration
+        run: |
+          cd voice_ia
+          ls v*.wav | sort > /tmp/concat_order.txt
+          : > /tmp/concat_list.txt
+          while read -r f; do printf "file '%s'\n" "$PWD/$f" >> /tmp/concat_list.txt; done < /tmp/concat_order.txt
+          ffmpeg -y -f concat -safe 0 -i /tmp/concat_list.txt -c copy "$GITHUB_WORKSPACE/additions/facecam/template/narration.wav" -loglevel error
+          cd "$GITHUB_WORKSPACE"
+          python3 -c "
+          import json
+          t = json.load(open('voice_ia/narration_timing.json'))
+          print(t['total_duration'])
+          " > /tmp/total_duration.txt
+
+      - name: Télécharge la vidéo source de l'avatar (release "avatar_source")
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/avatar_src
+          gh release download avatar_source --repo "${{ github.repository }}" -D /tmp/avatar_src -p "*"
+
+      - name: Fabrique la boucle vidéo de l'avatar (sans couture)
+        run: |
+          SRC=$(find /tmp/avatar_src -type f | head -1)
+          bash additions/facecam/make_loop.sh "$SRC" /tmp/avatar_loop_raw.mp4
+          ffmpeg -y -i /tmp/avatar_loop_raw.mp4 -vf scale=512:512 \
+            -c:v libvpx-vp9 -b:v 0 -crf 33 -pix_fmt yuv420p -row-mt 1 -an \
+            additions/facecam/template/avatar_loop.webm -loglevel error
+
+      - name: Construit content.json (fiches synchronisées sur le vrai minutage)
+        run: |
+          python3 additions/facecam/build_content.py \
+            --scenes additions/facecam/scenes_source.json \
+            --timing voice_ia/narration_timing.json \
+            --out additions/facecam/template/content.json
+
+      # --------------------------------------------------------------
+      # ⚠️ POINT À VALIDER ENSEMBLE : je réutilise ici create_broadcast_now.js
+      # (déjà dans ton repo, utilisé par le live existant) en supposant
+      # qu'il crée un broadcast YouTube et affiche l'URL RTMP complète
+      # (avec la clé) sur sa dernière ligne de sortie standard — comme je
+      # n'ai pas le détail exact de ce script sous les yeux, cette étape
+      # est à confirmer/ajuster avec toi avant le premier vrai live.
+      # --------------------------------------------------------------
+      - name: Crée le broadcast YouTube et récupère l'URL RTMP
+        id: broadcast
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          RTMP_URL=$(node create_broadcast_now.js --title "Face Cam — $(date +%Y-%m-%d)" | tail -1)
+          if [ -z "$RTMP_URL" ]; then
+            echo "ERREUR : create_broadcast_now.js n'a renvoyé aucune URL RTMP." >&2
+            exit 1
+          fi
+          echo "::add-mask::$RTMP_URL"
+          echo "rtmp_url=$RTMP_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Diffuse en direct (s'arrête à la fin exacte de la narration)
+        env:
+          CHROME_BIN: chromium-browser
+          RTMP_URL: ${{ steps.broadcast.outputs.rtmp_url }}
+        run: |
+          which chromium-browser >/dev/null 2>&1 || export CHROME_BIN=chromium
+          DURATION=$(cat /tmp/total_duration.txt)
+          echo "Durée prévue du live : ${DURATION}s"
+          bash additions/facecam/capture.sh \
+            --template-dir additions/facecam/template \
+            --audio additions/facecam/template/narration.wav \
+            --duration "$DURATION" \
+            --rtmp "$RTMP_URL"
