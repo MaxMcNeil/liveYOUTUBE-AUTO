@@ -33,6 +33,7 @@ Usage :
 """
 import argparse
 import json
+import os
 import random
 import sys
 
@@ -184,11 +185,19 @@ def main():
 
     pieces = []
     total_duration = 0.0
+    # Minutage énoncé par énoncé, relatif au DÉBUT DE CE MORCEAU (pas de
+    # la narration entière — schedule_and_publish.py décale ensuite ces
+    # horaires locaux en horaires absolus une fois tous les morceaux mis
+    # bout à bout, dans l'ordre final). C'est ce fichier qui permet à
+    # facecam/build_content.py de synchroniser les fiches visuelles sur
+    # la durée RÉELLE générée par Chatterbox, jamais une estimation.
+    timing = []
     for i, (text, pause_ms, exaggeration, cfg_weight) in enumerate(utterances):
         label = f"énoncé {i + 1}/{len(utterances)}"
         wav, duration = generate_one_utterance(
             model, text, args.ref_audio, args.language, exaggeration, cfg_weight, label,
         )
+        timing.append({"text": text, "start": round(total_duration, 3), "duration": round(duration, 3)})
         pieces.append(wav)
         total_duration += duration
 
@@ -201,8 +210,13 @@ def main():
 
     final_wav = torch.cat(pieces, dim=-1)
     ta.save(args.out, final_wav, model.sr)
+
+    timing_path = os.path.splitext(args.out)[0] + ".timing.json"
+    with open(timing_path, "w", encoding="utf-8") as f:
+        json.dump({"chunk_duration": round(total_duration, 3), "utterances": timing}, f, ensure_ascii=False, indent=2)
+
     print(f"[generate_voice_chunk] Écrit : {args.out} ({total_duration:.2f}s, "
-          f"{len(utterances)} énoncé(s) recollés)")
+          f"{len(utterances)} énoncé(s) recollés) + {timing_path}")
 
 
 if __name__ == "__main__":
