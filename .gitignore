@@ -1,0 +1,15 @@
+# Dépendances (réinstallées par `npm install` / pip dans chaque run CI)
+node_modules/
+__pycache__/
+*.pyc
+
+# Généré à l'exécution par les workflows voix clonée / face cam —
+# jamais à committer, toujours reconstruit à partir des releases
+# "voice_ia" / "avatar_source" à chaque run.
+facecam/template/narration.wav
+facecam/template/content.json
+facecam/template/avatar_loop.webm
+
+# Fichiers temporaires locaux (tests, essais avant commit)
+*.tmp
+.DS_Store
