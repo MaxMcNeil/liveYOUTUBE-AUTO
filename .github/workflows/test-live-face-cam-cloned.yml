@@ -20,12 +20,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Installe ffmpeg, Xvfb, Chromium
+      - name: Installe ffmpeg, Xvfb, et le Chromium du repo (playwright)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg xvfb chromium-browser || sudo apt-get install -y -qq ffmpeg xvfb chromium
+          sudo apt-get install -y -qq ffmpeg xvfb
+          npm install
+          npx playwright install --with-deps chromium
           pip install --quiet --break-system-packages playwright
-          python3 -m playwright install chromium --with-deps
 
       - name: Télécharge la narration clonée (voice_ia) + le minutage
         env:
@@ -87,11 +88,7 @@ jobs:
           echo "Durée du rendu : ${DUR}s (narration complète : ${TOTAL}s)"
 
       - name: Rend la vidéo complète (capture réelle, synchronisée)
-        env:
-          CHROME_BIN: chromium-browser
         run: |
-          which chromium-browser >/dev/null 2>&1 || export CHROME_BIN=chromium
-          mkdir -p /mnt/outputs
           bash additions/facecam/capture.sh \
             --template-dir additions/facecam/template \
             --audio additions/facecam/template/narration.wav \

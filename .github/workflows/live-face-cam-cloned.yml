@@ -18,13 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Installe ffmpeg, Xvfb, Chromium, Node
+      - name: Installe ffmpeg, Xvfb, et le Chromium du repo (playwright)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg xvfb chromium-browser || sudo apt-get install -y -qq ffmpeg xvfb chromium
-          pip install --quiet --break-system-packages playwright
-          python3 -m playwright install chromium --with-deps
+          sudo apt-get install -y -qq ffmpeg xvfb
           npm install
+          npx playwright install --with-deps chromium
+          pip install --quiet --break-system-packages playwright
 
       - name: Télécharge la narration clonée (voice_ia) + le minutage
         env:
@@ -69,39 +69,34 @@ jobs:
             --timing voice_ia/narration_timing.json \
             --out additions/facecam/template/content.json
 
-      # --------------------------------------------------------------
-      # ⚠️ POINT À VALIDER ENSEMBLE : je réutilise ici create_broadcast_now.js
-      # (déjà dans ton repo, utilisé par le live existant) en supposant
-      # qu'il crée un broadcast YouTube et affiche l'URL RTMP complète
-      # (avec la clé) sur sa dernière ligne de sortie standard — comme je
-      # n'ai pas le détail exact de ce script sous les yeux, cette étape
-      # est à confirmer/ajuster avec toi avant le premier vrai live.
-      # --------------------------------------------------------------
-      - name: Crée le broadcast YouTube et récupère l'URL RTMP
-        id: broadcast
-        env:
-          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      - name: Exporte la durée réelle de la narration (DURATION_SECONDS)
         run: |
-          RTMP_URL=$(node create_broadcast_now.js --title "Face Cam — $(date +%Y-%m-%d)" | tail -1)
-          if [ -z "$RTMP_URL" ]; then
-            echo "ERREUR : create_broadcast_now.js n'a renvoyé aucune URL RTMP." >&2
-            exit 1
-          fi
-          echo "::add-mask::$RTMP_URL"
-          echo "rtmp_url=$RTMP_URL" >> "$GITHUB_OUTPUT"
+          TOTAL=$(cat /tmp/total_duration.txt)
+          DURATION_INT=$(python3 -c "print(int(float('$TOTAL')) + 1)")  # arrondi au-dessus
+          echo "DURATION_SECONDS=$DURATION_INT" >> "$GITHUB_ENV"
+          echo "Durée exportée pour le broadcast : ${DURATION_INT}s"
+
+      # Même mécanisme que le live existant (stream_session.sh / manual-one-off-live.yml) :
+      # create_broadcast_now.js crée le broadcast et le lie au flux YouTube
+      # PERSISTANT (YOUTUBE_STREAM_ID) — il ne renvoie aucune URL RTMP.
+      # L'URL RTMP elle-même est construite ici à partir de YOUTUBE_STREAM_KEY,
+      # exactement comme dans stream_session.sh (flux primaire + secours).
+      - name: Crée le broadcast YouTube (lié au flux persistant existant)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          YOUTUBE_STREAM_ID: ${{ secrets.YOUTUBE_STREAM_ID }}
+        run: node create_broadcast_now.js
 
       - name: Diffuse en direct (s'arrête à la fin exacte de la narration)
         env:
-          CHROME_BIN: chromium-browser
-          RTMP_URL: ${{ steps.broadcast.outputs.rtmp_url }}
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
         run: |
-          which chromium-browser >/dev/null 2>&1 || export CHROME_BIN=chromium
           DURATION=$(cat /tmp/total_duration.txt)
           echo "Durée prévue du live : ${DURATION}s"
           bash additions/facecam/capture.sh \
             --template-dir additions/facecam/template \
             --audio additions/facecam/template/narration.wav \
             --duration "$DURATION" \
-            --rtmp "$RTMP_URL"
+            --stream-key "$YOUTUBE_STREAM_KEY"
