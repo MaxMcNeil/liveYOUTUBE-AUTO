@@ -42,7 +42,7 @@ jobs:
           ls v*.wav | sort > /tmp/concat_order.txt
           : > /tmp/concat_list.txt
           while read -r f; do printf "file '%s'\n" "$PWD/$f" >> /tmp/concat_list.txt; done < /tmp/concat_order.txt
-          ffmpeg -y -f concat -safe 0 -i /tmp/concat_list.txt -c copy "$GITHUB_WORKSPACE/additions/facecam/template/narration.wav" -loglevel error
+          ffmpeg -y -f concat -safe 0 -i /tmp/concat_list.txt -c copy "$GITHUB_WORKSPACE/facecam/template/narration.wav" -loglevel error
           cd "$GITHUB_WORKSPACE"
           python3 -c "
           import json
@@ -62,17 +62,17 @@ jobs:
       - name: Fabrique la boucle vidéo de l'avatar (sans couture)
         run: |
           SRC=$(find /tmp/avatar_src -type f | head -1)
-          bash additions/facecam/make_loop.sh "$SRC" /tmp/avatar_loop_raw.mp4
+          bash facecam/make_loop.sh "$SRC" /tmp/avatar_loop_raw.mp4
           ffmpeg -y -i /tmp/avatar_loop_raw.mp4 -vf scale=512:512 \
             -c:v libvpx-vp9 -b:v 0 -crf 33 -pix_fmt yuv420p -row-mt 1 -an \
-            additions/facecam/template/avatar_loop.webm -loglevel error
+            facecam/template/avatar_loop.webm -loglevel error
 
       - name: Construit content.json (fiches synchronisées sur le vrai minutage)
         run: |
-          python3 additions/facecam/build_content.py \
-            --scenes additions/facecam/scenes_source.json \
+          python3 facecam/build_content.py \
+            --scenes facecam/scenes_source.json \
             --timing voice_ia/narration_timing.json \
-            --out additions/facecam/template/content.json
+            --out facecam/template/content.json
 
       - name: Calcule la durée du rendu
         id: dur
@@ -89,9 +89,9 @@ jobs:
 
       - name: Rend la vidéo complète (capture réelle, synchronisée)
         run: |
-          bash additions/facecam/capture.sh \
-            --template-dir additions/facecam/template \
-            --audio additions/facecam/template/narration.wav \
+          bash facecam/capture.sh \
+            --template-dir facecam/template \
+            --audio facecam/template/narration.wav \
             --duration "${{ steps.dur.outputs.duration }}" \
             --out apercu_live_face_cam.mp4
 
