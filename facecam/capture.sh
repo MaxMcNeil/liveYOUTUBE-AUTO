@@ -14,7 +14,12 @@
 #   capture.sh --template-dir DIR --audio narration.wav --duration 320 \
 #              --out sortie.mp4                              # mode fichier (test)
 #   capture.sh --template-dir DIR --audio narration.wav --duration 320 \
-#              --rtmp rtmp://x.rtmp.youtube.com/live2/CLE     # mode live
+#              --stream-key XXXX                              # mode live (YouTube)
+#
+# --stream-key : comme stream_session.sh, pousse simultanément vers le
+#   flux primaire ET le flux de secours YouTube (-f tee), même clé pour
+#   les deux. Jamais de mode "RTMP générique" — spécifiquement YouTube,
+#   pour rester cohérent avec le reste du repo.
 #
 # --duration : durée exacte du rendu, en secondes (= narration_timing.json
 #   -> total_duration, calculé par schedule_and_publish.py). Le live/la
@@ -22,14 +27,14 @@
 #   après.
 set -euo pipefail
 
-TEMPLATE_DIR="" AUDIO="" DURATION="" OUT="" RTMP="" DISPLAY_NUM="77" PORT="8791" CDP_PORT="9222"
+TEMPLATE_DIR="" AUDIO="" DURATION="" OUT="" STREAM_KEY="" DISPLAY_NUM="77" PORT="8791" CDP_PORT="9222"
 while [ $# -gt 0 ]; do
   case "$1" in
     --template-dir) TEMPLATE_DIR="$2"; shift 2 ;;
     --audio) AUDIO="$2"; shift 2 ;;
     --duration) DURATION="$2"; shift 2 ;;
     --out) OUT="$2"; shift 2 ;;
-    --rtmp) RTMP="$2"; shift 2 ;;
+    --stream-key) STREAM_KEY="$2"; shift 2 ;;
     --display) DISPLAY_NUM="$2"; shift 2 ;;
     *) echo "Argument inconnu : $1" >&2; exit 1 ;;
   esac
@@ -37,9 +42,11 @@ done
 : "${TEMPLATE_DIR:?--template-dir requis}"
 : "${AUDIO:?--audio requis}"
 : "${DURATION:?--duration requis}"
-if [ -z "$OUT" ] && [ -z "$RTMP" ]; then
-  echo "ERREUR : --out ou --rtmp requis (l'un des deux)." >&2; exit 1
+if [ -z "$OUT" ] && [ -z "$STREAM_KEY" ]; then
+  echo "ERREUR : --out ou --stream-key requis (l'un des deux)." >&2; exit 1
 fi
+PRIMARY_RTMP="rtmp://x.rtmp.youtube.com/live2/${STREAM_KEY}"
+BACKUP_RTMP="rtmp://y.rtmp.youtube.com/live2/${STREAM_KEY}?backup=1"
 
 PIDS=()
 cleanup() {
@@ -58,7 +65,14 @@ echo "[capture] Serveur local pour ${TEMPLATE_DIR}..."
 PIDS+=("$!")
 sleep 1
 
-CHROME="${CHROME_BIN:-chromium}"
+if [ -n "${CHROME_BIN:-}" ]; then
+  CHROME="$CHROME_BIN"
+else
+  # Même Chromium que stream_session.sh (celui bundled par le paquet npm
+  # "playwright", déjà une dépendance du repo) — plus fiable sur les
+  # runners GitHub que le paquet apt chromium-browser.
+  CHROME="$(node -e "console.log(require('playwright').chromium.executablePath())")"
+fi
 echo "[capture] Lancement de Chromium (kiosk, autoplay)..."
 DISPLAY=":${DISPLAY_NUM}" "$CHROME" \
   --no-sandbox --kiosk --window-size=1920,1080 --window-position=0,0 \
@@ -111,12 +125,13 @@ if [ -n "$OUT" ]; then
     "$OUT" -loglevel warning
   echo "[capture] Terminé : ${OUT}"
 else
-  echo "[capture] Rendu temps réel -> RTMP : ${RTMP} (${REMAINING}s restantes)"
+  echo "[capture] Rendu temps réel -> YouTube, flux primaire + secours (${REMAINING}s restantes)"
   DISPLAY=":${DISPLAY_NUM}" ffmpeg -y \
     -f x11grab -draw_mouse 0 -video_size 1920x1080 -framerate 30 -i ":${DISPLAY_NUM}.0" \
     -ss "$AUDIO_OFFSET" -i "$AUDIO" \
     -t "$REMAINING" -map 0:v:0 -map 1:a:0 \
-    -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p -g 60 \
-    -c:a aac -b:a 192k -f flv "$RTMP" -loglevel warning
+    -c:v libx264 -preset veryfast -b:v 6000k -maxrate 6000k -bufsize 12000k -pix_fmt yuv420p -g 60 \
+    -c:a aac -b:a 192k \
+    -f tee "[f=flv]${PRIMARY_RTMP}|[f=flv]${BACKUP_RTMP}" -loglevel warning
   echo "[capture] Direct terminé."
 fi
