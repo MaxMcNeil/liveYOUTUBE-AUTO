@@ -109,7 +109,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: voice-chunk-${{ matrix.index }}
-          path: chunk_*.wav
+          path: |
+            chunk_*.wav
+            chunk_*.timing.json
 
   # ---------------------------------------------------------------
   # 4) Rassemble tous les morceaux, les remet dans l'ordre du texte,
