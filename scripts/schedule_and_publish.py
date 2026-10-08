@@ -110,7 +110,24 @@ def main():
             missing_timing += 1
         cumulative += dur  # décalage basé sur la durée RÉELLE (ffprobe), pas la somme du sidecar
 
-    if missing_timing:
+    if missing_timing == len(files):
+        # Aucun sidecar trouvé du tout — tous les chunks concernés. Dans ce
+        # cas narration_timing.json serait vide et casserait silencieusement
+        # build_content.py bien plus tard, avec une erreur confuse qui ne
+        # pointe pas vers la vraie cause. On refuse de publier : l'audio est
+        # intact (voice_ia marche quand même pour le live classique), mais
+        # il faut comprendre pourquoi les .timing.json manquent avant de
+        # publier pour le pipeline face cam.
+        print(
+            f"ERREUR : aucun des {len(files)} morceaux n'a de .timing.json associé — "
+            f"minutage global vide. Cause la plus fréquente : l'étape "
+            f"'actions/upload-artifact' du job 'generate' ne remonte pas les fichiers "
+            f"chunk_*.timing.json (vérifie son paramètre 'path'). Publication annulée "
+            f"pour éviter un échec confus, plus tard, dans build_content.py.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    elif missing_timing:
         print(f"[publish] Attention : {missing_timing} morceau(x) sans .timing.json — "
               f"minutage global incomplet pour ceux-là (audio non affecté, seul le "
               f"template graphique perdrait la synchro sur ces passages).", file=sys.stderr)
