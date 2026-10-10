@@ -57,8 +57,20 @@ trap cleanup EXIT INT TERM
 
 echo "[capture] Écran virtuel ${DISPLAY_NUM} (1920x1080)..."
 Xvfb ":${DISPLAY_NUM}" -screen 0 1920x1080x24 >/tmp/capture-xvfb.log 2>&1 &
-PIDS+=("$!")
+XVFB_PID="$!"
+PIDS+=("$XVFB_PID")
 sleep 1
+if ! kill -0 "$XVFB_PID" 2>/dev/null; then
+  echo "ERREUR : Xvfb n'a pas démarré (voir /tmp/capture-xvfb.log) :" >&2
+  cat /tmp/capture-xvfb.log >&2
+  exit 1
+fi
+if ! DISPLAY=":${DISPLAY_NUM}" xdpyinfo >/dev/null 2>&1; then
+  echo "ERREUR : l'écran virtuel :${DISPLAY_NUM} ne répond pas (xdpyinfo)." >&2
+  cat /tmp/capture-xvfb.log >&2
+  exit 1
+fi
+echo "[capture] Écran virtuel opérationnel."
 
 echo "[capture] Serveur local pour ${TEMPLATE_DIR}..."
 ( cd "$TEMPLATE_DIR" && python3 -m http.server "$PORT" --bind 127.0.0.1 ) >/tmp/capture-http.log 2>&1 &
@@ -77,13 +89,26 @@ echo "[capture] Lancement de Chromium (kiosk, autoplay)..."
 DISPLAY=":${DISPLAY_NUM}" "$CHROME" \
   --no-sandbox --kiosk --window-size=1920,1080 --window-position=0,0 \
   --autoplay-policy=no-user-gesture-required --disable-infobars --no-first-run \
+  --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer \
   --remote-debugging-port="$CDP_PORT" \
   --app="http://127.0.0.1:${PORT}/index.html?audio=$(basename "$AUDIO")" \
   >/tmp/capture-chrome.log 2>&1 &
-PIDS+=("$!")
+CHROME_PID="$!"
+PIDS+=("$CHROME_PID")
+
+dump_diagnostics() {
+  echo "----- [capture] DIAGNOSTIC (échec) -----" >&2
+  echo "Chromium (pid ${CHROME_PID:-?}) toujours actif ? $(kill -0 "${CHROME_PID:-0}" 2>/dev/null && echo oui || echo non)" >&2
+  for f in /tmp/capture-xvfb.log /tmp/capture-http.log /tmp/capture-chrome.log; do
+    echo "--- $f ---" >&2
+    [ -s "$f" ] && cat "$f" >&2 || echo "(vide ou absent)" >&2
+  done
+  echo "-----------------------------------------" >&2
+}
 
 echo "[capture] Attente que la page soit prête ET que l'audio ait démarré..."
-AUDIO_OFFSET=$(python3 - "$CDP_PORT" << 'PY'
+POLL_OUT="$(mktemp)"
+if ! python3 - "$CDP_PORT" > "$POLL_OUT" << 'PY'
 import sys, time
 from playwright.sync_api import sync_playwright
 port = sys.argv[1]
@@ -103,14 +128,20 @@ with sync_playwright() as p:
                     print(f"{ct:.3f}")
                     sys.exit(0)
                 time.sleep(0.2)
-            print("ERREUR : page jamais passée en lecture (voir /tmp/capture-chrome.log)", file=sys.stderr)
+            print("ERREUR : page jamais passée en lecture", file=sys.stderr)
             sys.exit(1)
         except Exception:
             time.sleep(0.3)
     print("ERREUR : impossible de se connecter à Chromium (CDP).", file=sys.stderr)
     sys.exit(1)
 PY
-)
+then
+  dump_diagnostics
+  rm -f "$POLL_OUT"
+  exit 1
+fi
+AUDIO_OFFSET="$(cat "$POLL_OUT")"
+rm -f "$POLL_OUT"
 echo "[capture] Prêt — audio de la page déjà à ${AUDIO_OFFSET}s, calage de la piste externe sur ce point."
 
 REMAINING=$(python3 -c "print(max(1, ${DURATION} - ${AUDIO_OFFSET}))")
