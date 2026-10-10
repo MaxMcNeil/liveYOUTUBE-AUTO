@@ -21,7 +21,7 @@ jobs:
       - name: Installe ffmpeg, Xvfb, et le Chromium du repo (playwright)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg xvfb
+          sudo apt-get install -y -qq ffmpeg xvfb x11-utils
           npm install
           npx playwright install --with-deps chromium
           pip install --quiet --break-system-packages playwright
