@@ -65,10 +65,14 @@ if ! kill -0 "$XVFB_PID" 2>/dev/null; then
   cat /tmp/capture-xvfb.log >&2
   exit 1
 fi
-if ! DISPLAY=":${DISPLAY_NUM}" xdpyinfo >/dev/null 2>&1; then
-  echo "ERREUR : l'écran virtuel :${DISPLAY_NUM} ne répond pas (xdpyinfo)." >&2
-  cat /tmp/capture-xvfb.log >&2
-  exit 1
+if command -v xdpyinfo >/dev/null 2>&1; then
+  if ! DISPLAY=":${DISPLAY_NUM}" xdpyinfo >/dev/null 2>&1; then
+    echo "ERREUR : l'écran virtuel :${DISPLAY_NUM} ne répond pas (xdpyinfo)." >&2
+    cat /tmp/capture-xvfb.log >&2
+    exit 1
+  fi
+else
+  echo "[capture] (xdpyinfo absent, contrôle sauté — le test de processus Xvfb ci-dessus suffit)"
 fi
 echo "[capture] Écran virtuel opérationnel."
 
@@ -86,11 +90,13 @@ else
   CHROME="$(node -e "console.log(require('playwright').chromium.executablePath())")"
 fi
 echo "[capture] Lancement de Chromium (kiosk, autoplay)..."
+CHROME_PROFILE_DIR="$(mktemp -d /tmp/chrome-profile-XXXXXX)"
 DISPLAY=":${DISPLAY_NUM}" "$CHROME" \
   --no-sandbox --kiosk --window-size=1920,1080 --window-position=0,0 \
   --autoplay-policy=no-user-gesture-required --disable-infobars --no-first-run \
   --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer \
-  --remote-debugging-port="$CDP_PORT" \
+  --user-data-dir="$CHROME_PROFILE_DIR" \
+  --remote-debugging-port="$CDP_PORT" --remote-debugging-address=127.0.0.1 \
   --app="http://127.0.0.1:${PORT}/index.html?audio=$(basename "$AUDIO")" \
   >/tmp/capture-chrome.log 2>&1 &
 CHROME_PID="$!"
