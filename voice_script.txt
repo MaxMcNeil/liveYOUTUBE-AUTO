@@ -1,0 +1,56 @@
+[ton:normal]
+Regardez bien ce qui se joue en ce moment… Pas dans les plateaux télé. Pas dans les communiqués. Dans les prétoires, dans les perquisitions, dans le dark web où les rançons s'écrivent en temps réel.
+
+[ton:calme]
+Harvey Weinstein vient d'être condamné à quinze ans de prison pour l'agression sexuelle d'une assistante de production. Quinze ans. Le même week-end, le chanteur marocain Saad Lamjarred voit sa peine alourdie en appel à dix ans de réclusion pour viol à Paris. Dix ans. Deux hommes qui ont longtemps cru que la notoriété protégeait. Deux décisions qui tombent presque en même temps. Ce n'est pas une coïncidence de calendrier. C'est la photographie d'un basculement.
+
+Pendant que ces peines sont prononcées, en France un autre dossier avance. Loïk Le Priol est condamné à vingt-six ans de réclusion. Romain Bouvier à dix-neuf ans. Pour le meurtre de Federico Martin Aramburu. L'alchimie funeste de ce duo, comme le dit le jugement. Un règlement de comptes qui a tourné à l'exécution.
+
+À Nancy, un septuagénaire est condamné à quatorze ans de prison pour viols sur trois mineures. Le tribunal a tranché. À Paris, le professeur d'anglais soupçonné de viols et d'agressions sexuelles sur des enfants de trois à cinq ans est mis en examen et incarcéré. Le directeur du périscolaire d'une école est interpellé devant les parents et les enfants. La scène se passe devant tout le monde.
+
+En Essonne, « Tonton chicha » est soupçonné d'avoir violé sa petite protégée de l'immeuble. En Yvelines, le principal adjoint d'un collège de Maurepas est mis en examen pour viol sur mineur. À Marseille, un commissaire est mis en examen pour avoir protégé des policiers soupçonnés de violences sur Angelina, dix-neuf ans. Le chirurgien esthétique star Sydney Ohana est sous le coup de nouvelles mises en examen pour des violences sexuelles. L'ancien joueur de Bordeaux Andy Carroll affirme avoir été victime d'une agression sexuelle en 2021. Patrick Bruel est accusé de viols et de harcèlement sexuel. Trois départs de feu ont eu lieu cet été aux abords d'une de ses propriétés. Achraf Hakimi est renvoyé devant une cour criminelle pour viol. La Cour de cassation a tranché. Il sera jugé.
+
+[ton:normal]
+Et pendant que la justice avance sur ces dossiers, d'autres affaires suivent une trajectoire très différente.
+
+Les cambrioleurs de François Hollande et Julie Gayet sont condamnés à dix-huit mois de prison avec sursis. Pour une montre et un iPad. Le contraste est là. À côté, un notaire de Caen est mis en examen pour escroqueries, faux en écriture publique et blanchiment. Le général cinq étoiles Benoît Puga a été placé en garde à vue. Soupçons de corruption dans l'attribution de Légions d'honneur. Le système des décorations sous le feu.
+
+Deux infirmiers libéraux auraient monté un vrai système de fraude à la Sécu. Un million sept cent mille euros de préjudice. Une vaste escroquerie dans le milieu des opticiens parisiens est aussi dans le viseur du parquet de Paris. Vingt-deux suspects seront jugés.
+
+À Naples, kalachnikovs, montres de luxe et trois millions d'euros cachés dans les murs. L'incroyable perquisition d'un baron de la drogue. Le conducteur d'un go-fast qui avait percuté une voiture de police est condamné à cinq ans de prison ferme. La chute de Wahid B., le Val-de-Marnais qui traitait avec un cartel colombien. En Lot-et-Garonne, un quadragénaire est placé en garde à vue. Il pouvait produire jusqu'à trois kilos de cannabis à son domicile.
+
+Les policiers aussi sont dans le collimateur. Deux policiers de la Brav-M sont condamnés après un accident à cent trente kilomètres par heure en plein Paris. Un autre est condamné pour avoir vandalisé la voiture d'un particulier, dans un coup de sang. Un troisième est condamné à douze ans de réclusion criminelle pour avoir mis le feu dans la maison où se trouvaient sa femme et ses quatre enfants.
+
+L'influenceur Mounim Sabhi, de la Team du Château, soupçonné de violences filmées en direct, est placé en détention provisoire. Deux sœurs sont condamnées : leurs deux chiens en avaient attaqué un troisième et blessé un homme. Le parent qui s'était introduit dans un lycée de Gironde est condamné à trois mois sous bracelet électronique.
+
+[ton:calme]
+Et les affaires plus anciennes remontent aussi. Meurtre sur l'île de la Comtesse : pourquoi le mari est-il jugé seize ans après. Enlèvement de Mia : cinq ans après, le complotiste Rémy Daillet est jugé. Meurtre de Thomas à Crépol : onze jeunes renvoyés aux assises pour meurtre aggravé par du racisme. Attentat de la Tour Eiffel en 2023 : les investigations sont rouvertes à la demande de la défense. Attentat de Magnanville : vers un troisième procès du complice présumé. Treize Novembre : la justice belge va auditionner les victimes avant la possible libération du « logisticien des attentats ».
+
+Un couple d'octogénaires est tué par son voisin de quatre-vingt-dix ans au fusil de chasse, dans les Pyrénées-Atlantiques. Un sexagénaire est tué à son domicile dans l'Aube, ses agresseurs en fuite. Une femme pompier de vingt-quatre ans est tuée dans un feu de forêt dans le nord du Portugal. À Dijon, un homme soupçonné de féminicide est interpellé. Une cycliste est tuée en Saône-et-Loire, le chauffard positif à la cocaïne. L'agresseur d'un maire de Seine-et-Marne est écroué.
+
+Et dans un tout autre registre : le scandale Marko Rupnik. À Lourdes, les mosaïques de la basilique du Rosaire ont été occultées pour la venue du pape. Léon Quatorze s'est rendu à Lourdes après que la cité mariale, ayant frôlé la faillite, a réinventé son modèle économique.
+
+[ton:normal]
+Voilà pour les tribunaux. Mais pendant que tout cela se joue, un autre front ne s'arrête jamais : le cyber.
+
+[ton:calme]
+En quelques jours à peine, plus de soixante revendications de rançongiciels ont été recensées. Des groupes comme QILIN, WALLSTREET, EVEREST, METAENCRYPTOR, BARRACUDA ou DRAGONFORCE frappent des cibles partout dans le monde : entreprises de santé, industriels, cabinets d'avocats, universités, compagnies aériennes.
+
+Plusieurs entreprises françaises sont directement touchées. QILIN revendique une intrusion chez Agora, une coopérative agricole. ZAWOO frappe Agiliance dans les services professionnels, puis Francare dans la santé, puis un industriel du secteur manufacturier. DRAGONFORCE revendique le groupe BMGP. MEDUSALOCKER frappe Aokkef. Secteur agricole, secteur de la santé, secteur manufacturier : le cybercrime ne choisit pas un domaine, il les traverse tous.
+
+À l'international, le mode opératoire est toujours le même : une intrusion, une menace de publication, un ultimatum. Cipher.systems, International Chemical, Securitas, Electrolux, GE Vernova, une université au Salvador, une compagnie aérienne tanzanienne : la liste des cibles s'allonge chaque semaine, et chaque nom porte la même mécanique de chantage aux données.
+
+[ton:colere]
+Voilà le contraste. D'un côté, des peines qui s'écrivent en années : quinze, dix, vingt-six, dix-neuf, quatorze, douze. De l'autre, des rançons qui s'écrivent en heures et en ultimatums. Les uns passent devant les juges. Les autres publient des listes sur le dark web.
+
+[ton:calme]
+La lecture stratégique est simple. La justice pénale avance sur les violences sexuelles, les meurtres, les fraudes, la corruption des honneurs. Elle place des figures en garde à vue, elle condamne, elle incarcère. En même temps, le crime organisé continue de stocker de l'argent et des armes, les cartels passent les frontières, et le cybercrime industrialise le chantage à l'échelle de dizaines d'entreprises françaises par semaine.
+
+[ton:colere]
+D'un côté, un État qui juge. De l'autre, un écosystème criminel qui s'adapte et qui frappe plus vite que les procédures. Les peines s'écrivent en années. Les attaques s'écrivent en heures.
+
+[ton:calme]
+Ce que vous venez d'entendre n'est pas une succession de faits divers isolés. C'est la carte d'un même moment : la justice qui resserre sur certains dossiers, le crime qui continue de tester les failles, le cyber qui industrialise le chantage. La séquence est en cours. Elle ne s'arrête pas. Elle s'écrit en temps réel, dans les prétoires, dans les perquisitions, sur le dark web.
+
+[ton:normal]
+… À bon entendeur.
