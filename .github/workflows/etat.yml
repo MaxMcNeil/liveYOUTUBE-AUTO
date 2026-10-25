@@ -6,9 +6,7 @@ on:
   workflow_run:
     workflows: ["Debug_List_YouTube_Streams", "Générer la voix clonée (texte long)", "Autorisation Google (une seule fois)", "Live — Face Cam Cloné (diffusion YouTube réelle)", "Manual one-off live", "Prerecorded_Live_Now", "Test — Live Face Cam Cloné (aperçu, pas de diffusion)"]
     types: [completed]
-  schedule:
-    - cron: "23 6 * * *"   # une vérification par jour (tâches planifiées arrêtées, etc.)
-  workflow_dispatch:
+  workflow_dispatch:      # aucune exécution planifiée : seulement après tes propres lancements, ou à la main
 
 permissions:
   contents: write

@@ -136,7 +136,7 @@ RULES = [  # (motif, catégorie, explication, action)  — l'ordre compte : du p
      "vérifie que l'API est activée sur le projet Google / que le compte a les droits ; sinon renouvelle le secret"),
     (r"no space left on device", "disk", "disque du serveur GitHub plein pendant le travail",
      "fichier trop gros pour le runner : réduire la taille ou découper le traitement"),
-    (r"exceeded the maximum execution time|timed? ?out after|the operation was canceled", "timeout",
+    (r"exceeded the maximum execution time|timed? ?out after", "timeout",
      "le travail a dépassé le temps maximum", "relance ; si ça se répète, la vidéo/le traitement est trop long"),
     (r"\b50[234]\b|service unavailable|high demand|overloaded|bad gateway", "busy",
      "{api} était surchargé ou en panne au moment du lancement", "passager : relance le workflow un peu plus tard"),
@@ -149,9 +149,19 @@ RULES = [  # (motif, catégorie, explication, action)  — l'ordre compte : du p
 ]
 
 
+ANSI = re.compile(r"\x1b\[[0-9;]*m|\[[0-9;]*m")
+
+
 def classify(log: str) -> dict:
     lines = [l for l in log.splitlines() if l.strip()]
-    clean = [re.sub(r"^\S+Z\s", "", l) for l in lines]  # retire l'horodatage GitHub
+    # retire l'horodatage GitHub ; ignore les commandes réaffichées par GitHub (en couleur) et les en-têtes de groupe
+    clean = []
+    for l in lines:
+        echoed = "\x1b[36;1m" in l or "[36;1m" in l
+        l = ANSI.sub("", re.sub(r"^\S+Z\s", "", l))
+        if echoed or l.startswith(("##[group]", "##[endgroup]", "shell:", "env:")):
+            continue
+        clean.append(l)
     tail = "\n".join(clean[-400:])
     low = tail.lower()
     api, reset = which_api(tail)
@@ -164,8 +174,8 @@ def classify(log: str) -> dict:
             u = unblock(r, per_minute)
             return {"cat": cat, "explication": expl.format(api=a), "action": action.format(api=a, unblock=u),
                     "ligne": line.strip()[:220], "api": a}
-    err = next((l for l in reversed(clean) if re.search(r"(error|exception|traceback|failed|fatal)", l.lower())
-                and "##[" not in l), "")
+    err = next((l for l in reversed(clean) if re.search(r"(error|exception|traceback|failed|fatal|invalid|no such)", l.lower())
+                and "##[" not in l and "exit code" not in l), "")
     exc = next((l for l in reversed(clean) if re.match(r"^\s*[A-Za-z_.]+(Error|Exception):", l)), "")
     return {"cat": "bug", "explication": "erreur dans le programme (pas un problème de quota ni de clé)",
             "action": "à corriger dans le code : transmets la ligne d'erreur ci-dessous", "ligne": (exc or err).strip()[:220], "api": ""}
@@ -240,7 +250,7 @@ def collect() -> list[dict]:
                 except Exception as e:  # noqa: BLE001
                     log = f"(journal illisible : {e})"
                 c = classify(log or "")
-                if last.get("conclusion") == "cancelled" and c["cat"] == "bug":
+                if last.get("conclusion") == "cancelled":
                     c = {"cat": "cancelled", "explication": "lancement annulé (à la main, ou remplacé par un lancement plus récent)",
                          "action": "rien à faire si c'était voulu", "ligne": "", "api": ""}
                 item.update(c)
@@ -250,7 +260,7 @@ def collect() -> list[dict]:
                 age_h = (time.time() - dt.datetime.fromisoformat(runs[0]["created_at"].replace("Z", "+00:00")).timestamp()) / 3600
             except (KeyError, ValueError):
                 age_h = 0
-            if age_h > max(3 * iv, iv + 6):
+            if os.environ.get("ETAT_CRON_CHECK") == "1" and age_h > max(3 * iv, iv + 6):
                 item["icon"] = "⚠️"
                 item["texte"] += f" — ⚠️ tâche planifiée toutes les ~{iv:g} h mais aucun lancement depuis {age_h:.0f} h"
                 item.setdefault("action", "GitHub retarde ou suspend parfois les tâches planifiées ; vérifie qu'elle est active "
@@ -263,7 +273,7 @@ def render(items: list[dict]) -> str:
     now = dt.datetime.now(ROME).strftime("%d/%m/%Y à %H:%M")
     todo = [i for i in items if i.get("icon") in ("❌", "⚠️")]
     L = [START, "## Workflows", "",
-         f"_Vérifié le {now} (heure italienne), automatiquement à la fin de chaque workflow et chaque jour._", ""]
+         f"_Vérifié le {now} (heure italienne), automatiquement à la fin de chacun de tes lancements (aucune exécution planifiée)._", ""]
     if not todo:
         L.append("✅ **Tout fonctionne** : aucun workflow en échec.")
         L.append("")
