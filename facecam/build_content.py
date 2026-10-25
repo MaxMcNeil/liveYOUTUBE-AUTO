@@ -72,6 +72,18 @@ def main():
         out_scene["t"] = round(t, 2)
         scenes_out.append(out_scene)
 
+    if errors and len(errors) == len(src["scenes"]):
+        # AUCUNE ancre trouvée : ce n'est pas une coupe de phrase, c'est que la narration (release voice_ia)
+        # a été générée à partir d'un AUTRE texte que voice_script.txt / scenes_source.json actuels.
+        debut = utterances[0]["text"][:90] if utterances else "?"
+        print("ERREUR : la narration clonée ne correspond pas au texte actuel du live.\n"
+              f"  - début de la narration enregistrée (release voice_ia) : « {debut} »\n"
+              f"  - début attendu (scenes_source.json) : « {src['scenes'][0]['anchor'][:90]} »\n"
+              "QUOI FAIRE : lance d'abord le workflow « Générer la voix clonée (texte long) » avec voice_script.txt,\n"
+              "puis relance ce test. (Le texte a été modifié après la dernière génération de la voix.)",
+              file=sys.stderr)
+        sys.exit(1)
+
     if errors:
         print("ERREUR : certaines ancres n'ont pas pu être localisées dans le minutage :",
               file=sys.stderr)
