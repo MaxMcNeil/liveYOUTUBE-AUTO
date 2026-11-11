@@ -17,6 +17,11 @@ on:
       code:
         description: "Code d'autorisation copié depuis l'URL de redirection"
         required: true
+      chaine:
+        description: "Chaîne autorisée (celle que tu as choisie sur l'écran Google)"
+        type: choice
+        options: ["fr — Le Journal du NON", "ar — Gulf think-tank"]
+        default: "fr — Le Journal du NON"
 
 jobs:
   exchange:
@@ -47,9 +52,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          gh secret set GOOGLE_REFRESH_TOKEN \
+          NAME=${{ startsWith(inputs.chaine, 'ar') && 'GOOGLE_REFRESH_TOKEN_AR' || 'GOOGLE_REFRESH_TOKEN' }}
+          gh secret set "$NAME" \
             --repo "${{ github.repository }}" \
             --body "${{ steps.exchange.outputs.refresh_token }}"
+          echo "Secret enregistré : $NAME"
 
       - name: Confirmation
-        run: echo "GOOGLE_REFRESH_TOKEN enregistré. Relancez le workflow 'Déployer le livestream' pour activer l'automatisation YouTube."
+        run: echo "Autorisation enregistrée (${{ inputs.chaine }}). Relancez le workflow 'Déployer le livestream' pour activer l'automatisation YouTube."

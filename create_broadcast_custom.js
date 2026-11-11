@@ -15,10 +15,15 @@ const {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REFRESH_TOKEN,
-  YOUTUBE_STREAM_ID,
 } = process.env;
+// la clé arrive parfois avec un espace ou un retour à la ligne collé par erreur dans le secret
+const YOUTUBE_STREAM_KEY = (process.env.YOUTUBE_STREAM_KEY || '').trim();
+let { YOUTUBE_STREAM_ID } = process.env;
 
-const METADATA_PATH = path.join(__dirname, 'Prerecorded_lives', 'input_METADATA.txt');
+// METADATA_FILE : fichier propre à la chaîne choisie (ex. input_METADATA_ar.txt) ; par défaut le fichier habituel.
+const METADATA_PATH = process.env.METADATA_FILE
+  ? path.resolve(__dirname, process.env.METADATA_FILE)
+  : path.join(__dirname, 'Prerecorded_lives', 'input_METADATA.txt');
 
 function parseMetadata(raw) {
   const titleMatch = raw.match(/^Titre\s*:\s*(.*)$/im);
@@ -47,7 +52,7 @@ async function main() {
     return;
   }
 
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN || !YOUTUBE_STREAM_ID) {
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN || (!YOUTUBE_STREAM_ID && !YOUTUBE_STREAM_KEY)) {
     console.log('Titre renseigné, mais automatisation Google non configurée (secrets absents) — étape ignorée.');
     return;
   }
@@ -55,6 +60,39 @@ async function main() {
   const oauth2Client = new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
   oauth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
   const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+  // Sur quelle chaîne ces identifiants agissent-ils ? Écrit dans le journal du run.
+  try {
+    const { data: me } = await youtube.channels.list({ part: ['snippet'], mine: true });
+    console.log(`Chaîne YouTube de cette autorisation : « ${me.items?.[0]?.snippet?.title || 'inconnue'} »`);
+  } catch (chErr) {
+    console.log('Nom de la chaîne non lu :', chErr.message);
+  }
+
+  // VÉRIFICATION ANTI-ERREUR DE CHAÎNE : la clé de flux qui va servir à diffuser doit appartenir à la chaîne de cette
+  // autorisation. Sinon le titre serait posé sur une chaîne et la vidéo partirait sur une autre (ou resterait sans
+  // titre) sans que rien ne le signale. L'identifiant du flux est retrouvé à partir de la clé : le secret
+  // YOUTUBE_STREAM_ID devient facultatif, et un identifiant périmé est corrigé tout seul.
+  if (YOUTUBE_STREAM_KEY) {
+    const items = [];
+    let pageToken;
+    do {
+      const { data: page } = await youtube.liveStreams.list({ part: ['id', 'cdn'], mine: true, maxResults: 50, pageToken });
+      items.push(...(page.items || []));
+      pageToken = page.nextPageToken;
+    } while (pageToken && items.length < 500);
+    const hit = items.find((x) => x.cdn?.ingestionInfo?.streamName === YOUTUBE_STREAM_KEY);
+    if (!hit && YOUTUBE_STREAM_ID) {
+      // comportement d'avant conservé : on fait confiance au secret YOUTUBE_STREAM_ID, mais on le signale
+      console.log("⚠ La clé de flux n'a pas été retrouvée parmi les flux de cette chaîne : identifiant du secret YOUTUBE_STREAM_ID utilisé tel quel.");
+    } else if (!hit) {
+      throw new Error("la clé de flux n'appartient pas à la chaîne de cette autorisation Google (clé d'une autre chaîne, ou clé régénérée dans YouTube Studio). Vérifie le secret de la clé de flux et l'autorisation de cette chaîne.");
+    }
+    if (hit) {
+      if (YOUTUBE_STREAM_ID && YOUTUBE_STREAM_ID !== hit.id) console.log('YOUTUBE_STREAM_ID ne correspondait pas à la clé de flux : identifiant corrigé automatiquement.');
+      YOUTUBE_STREAM_ID = hit.id;
+    }
+  }
 
   // Nettoyage : YouTube n'autorise qu'un seul broadcast actif par clé de
   // flux. On regarde TOUS les statuts (broadcastStatus: 'all'), pas
@@ -95,14 +133,16 @@ async function main() {
     console.log('Nettoyage des anciens broadcasts ignoré :', cleanupErr.message);
   }
 
-  console.log(`Création du broadcast : "${title}"`);
+  const safeTitle = title.replace(/[<>]/g, '').slice(0, 100);
+  const safeDescription = description.replace(/[<>]/g, '').slice(0, 4900);
+  console.log(`Création du broadcast : "${safeTitle}"`);
 
   const { data: broadcast } = await youtube.liveBroadcasts.insert({
     part: ['snippet', 'status', 'contentDetails'],
     requestBody: {
       snippet: {
-        title,
-        description,
+        title: safeTitle,
+        description: safeDescription,
         scheduledStartTime: new Date().toISOString(),
       },
       status: {

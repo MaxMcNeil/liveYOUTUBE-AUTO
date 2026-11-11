@@ -43,6 +43,19 @@ procédure d'upload — les gros fichiers ne passent pas par git).
 - Titre/description personnalisables via `Prerecorded_lives/input_METADATA.txt`
   (laissé vide → défauts YouTube conservés)
 
+**Nouveaux champs (facultatifs — sans y toucher, tout marche comme avant)** :
+- `source` : la release `prerecorded-lives` de ce dépôt, **ou** le dernier résultat du workflow « Faceless live arabic »
+  de Push-overlay (tu regardes d'abord la vidéo là-bas, puis tu lances le direct ici).
+- `chaine` : `fr` (Le Journal du NON) ou `ar` (Gulf think-tank). La chaîne arabe utilise ses propres secrets :
+  `YOUTUBE_STREAM_KEY_AR` (obligatoire), et pour le titre automatique `GOOGLE_REFRESH_TOKEN_AR` + `YOUTUBE_STREAM_ID_AR`
+  + `Prerecorded_lives/input_METADATA_ar.txt`. Jamais de repli de l'arabe vers les identifiants français.
+- Le format du direct (vertical / horizontal) suit celui de la première vidéo.
+- **Titre et description automatiques** : avec la source Faceless, la fiche écrite par ce workflow (titre, description,
+  tags séparés par des virgules, hashtags) est posée telle quelle sur le direct. Pour la chaîne arabe il faut l'avoir
+  autorisée une fois : workflow « Autorisation Google (une seule fois) » avec `chaine = ar` (secret
+  `GOOGLE_REFRESH_TOKEN_AR`). Avant de diffuser, le workflow vérifie que la clé de flux appartient bien à la chaîne
+  autorisée : jamais un titre sur une chaîne et la vidéo sur une autre.
+
 Déclenchement uniquement manuel : Actions → **"Prerecorded_Live_Now"**
 → **Run workflow**.
 

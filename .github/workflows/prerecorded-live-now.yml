@@ -1,16 +1,42 @@
 name: Prerecorded_Live_Now
 
-# Déclenché manuellement (Actions > Prerecorded_Live_Now > Run
-# workflow), au moment où vous voulez passer les vidéos de
-# Prerecorded_lives/ en direct. Pas de planification automatique —
-# c'est vous qui choisissez l'instant T.
+# Déclenché manuellement (Actions > Prerecorded_Live_Now > Run workflow), au moment où vous voulez passer des vidéos
+# en direct. Pas de planification automatique — c'est vous qui choisissez l'instant T.
+#   source  = release « prerecorded-lives » de ce dépôt (comme avant), OU le dernier résultat du workflow
+#             « Faceless live arabic » de Push-overlay (release out-explainer) : vous regardez d'abord la vidéo là-bas,
+#             puis vous lancez le direct ici.
+#   chaine  = fr (Le Journal du NON, comme avant) ou ar (Gulf think-tank, secret YOUTUBE_STREAM_KEY_AR).
+# Sans rien changer aux champs, le comportement est exactement celui d'avant.
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Vidéos à diffuser"
+        type: choice
+        options: ["release prerecorded-lives (ce dépôt)", "dernier résultat Faceless live arabic (Push-overlay)"]
+        default: "release prerecorded-lives (ce dépôt)"
+      chaine:
+        description: "Chaîne YouTube du direct"
+        type: choice
+        options: ["fr — Le Journal du NON", "ar — Gulf think-tank"]
+        default: "fr — Le Journal du NON"
+      format_faceless:
+        description: "Résultat Faceless à diffuser (si les deux formats existent)"
+        type: choice
+        options: [vertical, horizontal]
+        default: vertical
+
+concurrency:
+  # un seul direct à la fois par chaîne : un 2e lancement attend la fin du premier au lieu de se battre pour la même clé
+  group: live-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+  cancel-in-progress: false
 
 jobs:
   stream:
     runs-on: ubuntu-latest
     timeout-minutes: 360   # limite haute, la durée réelle dépend de vos vidéos
+    env:
+      CHAINE: ${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,37 +46,118 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Vérifier la clé de flux de la chaîne choisie (avant tout téléchargement)
+        env:
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: |
+          KEY_FR=$(printf '%s' "$KEY_FR" | tr -d '[:space:]'); KEY_AR=$(printf '%s' "$KEY_AR" | tr -d '[:space:]')
+          if [ "$CHAINE" = "ar" ]; then
+            [ -n "$KEY_AR" ] || { echo "::error::Chaîne arabe choisie mais le secret YOUTUBE_STREAM_KEY_AR n'existe pas. Termux : gh secret set YOUTUBE_STREAM_KEY_AR --repo ${{ github.repository }} (clé : YouTube Studio de Gulf think-tank → Passer au direct → Flux)."; exit 1; }
+            [ "$KEY_AR" != "$KEY_FR" ] || { echo "::error::YOUTUBE_STREAM_KEY_AR est identique à la clé française : le direct partirait sur Le Journal du NON. Mets la clé de la chaîne Gulf think-tank."; exit 1; }
+          else
+            [ -n "$KEY_FR" ] || { echo "::error::Secret YOUTUBE_STREAM_KEY manquant."; exit 1; }
+          fi
+          echo "Chaîne : $CHAINE — clé de flux présente."
+
       - name: Installer les dépendances
         run: |
           npm install
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
 
-      - name: Télécharger les vidéos depuis la Release "prerecorded-lives"
+      - name: Télécharger les vidéos
         env:
           GH_TOKEN: ${{ github.token }}
+          SOURCE: ${{ inputs.source }}
+          WANT: ${{ inputs.format_faceless }}
         run: |
+          set -euo pipefail
           mkdir -p Prerecorded_lives
-          gh release download prerecorded-lives \
-            --repo "${{ github.repository }}" \
-            --dir Prerecorded_lives \
-            --clobber \
-            --pattern "*" || {
-              echo "::error::Aucune release nommée 'prerecorded-lives' trouvée, ou aucune vidéo attachée. Voir Prerecorded_lives/README.md."
-              exit 1
-            }
+          find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" -delete
+          if [[ "$SOURCE" == *Faceless* ]]; then
+            REPO="${{ github.repository_owner }}/Push-overlay"
+            names=$(gh release view out-explainer --repo "$REPO" --json assets -q '.assets[].name' 2>/dev/null || true)
+            [ -n "$names" ] || { echo "::error::Aucun résultat Faceless trouvé (release out-explainer de $REPO). Lance d'abord « Faceless live arabic » et vérifie la vidéo."; exit 1; }
+            other=$([ "$WANT" = "vertical" ] && echo horizontal || echo vertical)
+            f=$(grep -E "^explainer-$WANT-.*\.mp4$" <<<"$names" | sort | tail -n1 || true)
+            if [ -z "$f" ]; then f=$(grep -E "^explainer-$other-.*\.mp4$" <<<"$names" | sort | tail -n1 || true); [ -n "$f" ] && echo "::warning::Pas de version $WANT dans le dernier résultat : diffusion de la version $other."; fi
+            [ -n "$f" ] || { echo "::error::La release out-explainer ne contient aucune vidéo explainer-*.mp4."; exit 1; }
+            echo "Résultat Faceless diffusé : $f"
+            # garde-fous contre « la mauvaise vidéo part en direct » : résultat ancien, ou montage Faceless encore en cours
+            pub=$(gh release view out-explainer --repo "$REPO" --json publishedAt -q .publishedAt 2>/dev/null || true)
+            if [ -n "$pub" ]; then
+              age=$(( ( $(date -u +%s) - $(date -u -d "$pub" +%s) ) / 3600 ))
+              echo "Résultat publié le $pub (il y a ${age} h)."
+              [ "$age" -lt 48 ] || echo "::warning::Ce résultat Faceless date de plus de 2 jours : vérifie que c'est bien la vidéo voulue."
+            fi
+            busy=$(gh api "repos/$REPO/actions/workflows/faceless-live-arabic.yml/runs?per_page=5" -q '[.workflow_runs[]|select(.status!="completed")]|length' 2>/dev/null || echo 0)
+            [ "$busy" = "0" ] || echo "::warning::Un montage Faceless est en cours dans Push-overlay : la vidéo diffusée est celle du résultat PRÉCÉDENT ($f)."
+            gh release download out-explainer --repo "$REPO" --pattern "$f" --dir Prerecorded_lives --clobber
+            # fiche YouTube écrite par Faceless (titre, description, tags, hashtags) : posée telle quelle sur le direct
+            rm -f Prerecorded_lives/input_METADATA_faceless.txt
+            if grep -qx "youtube-metadata.txt" <<<"$names"; then
+              gh release download out-explainer --repo "$REPO" --pattern "youtube-metadata.txt" --dir /tmp/ytmeta --clobber \
+                && mv /tmp/ytmeta/youtube-metadata.txt Prerecorded_lives/input_METADATA_faceless.txt \
+                && echo "Titre du direct : $(grep -m1 -i '^Titre' Prerecorded_lives/input_METADATA_faceless.txt | cut -c1-120)"
+            else echo "::warning::Pas de fiche YouTube dans le résultat Faceless : titre habituel conservé."; fi
+          else
+            gh release download prerecorded-lives \
+              --repo "${{ github.repository }}" \
+              --dir Prerecorded_lives \
+              --clobber \
+              --pattern "*" || {
+                echo "::error::Aucune release nommée 'prerecorded-lives' trouvée, ou aucune vidéo attachée. Voir Prerecorded_lives/README.md."
+                exit 1
+              }
+          fi
+          # chaque fichier doit être une vidéo lisible AVEC du son (sinon le direct s'arrêterait en plein milieu)
+          n=0
+          while IFS= read -r v; do
+            ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$v" | grep -q video || { echo "::error::Fichier illisible ou sans image : $(basename "$v")"; exit 1; }
+            ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$v" | grep -q audio || { echo "::error::Vidéo sans son : $(basename "$v")"; exit 1; }
+            n=$((n + 1))
+          done < <(find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" ! -iname ".*" | sort)
+          [ "$n" -ge 1 ] || { echo "::error::Aucune vidéo à diffuser."; exit 1; }
+          echo "$n vidéo(s) prête(s)."
 
-      - name: Générer le titre/description (si "Titre" renseigné)
+      # Titre/description : chaîne française = comme avant (input_METADATA.txt + secrets Google habituels).
+      # Chaîne arabe = seulement si ses propres secrets existent (GOOGLE_REFRESH_TOKEN_AR, YOUTUBE_STREAM_ID_AR) et si
+      # Prerecorded_lives/input_METADATA_ar.txt a un « Titre » ; sinon le direct garde le titre réglé dans YouTube Studio.
+      # Jamais le titre français sur la chaîne arabe.
+      - name: Titre et description du direct
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          YOUTUBE_STREAM_ID: ${{ secrets.YOUTUBE_STREAM_ID }}
-        run: node create_broadcast_custom.js
+          TOKEN_FR: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TOKEN_AR: ${{ secrets.GOOGLE_REFRESH_TOKEN_AR }}
+          STREAM_ID_FR: ${{ secrets.YOUTUBE_STREAM_ID }}
+          STREAM_ID_AR: ${{ secrets.YOUTUBE_STREAM_ID_AR }}
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: |
+          # Fiche utilisée : celle de Faceless si la source est Faceless, sinon le fichier habituel de la chaîne.
+          # Chaque chaîne n'utilise QUE ses propres identifiants (aucun repli de l'arabe vers le français).
+          if [ -s Prerecorded_lives/input_METADATA_faceless.txt ]; then META=Prerecorded_lives/input_METADATA_faceless.txt
+          elif [ "$CHAINE" = "ar" ]; then META=Prerecorded_lives/input_METADATA_ar.txt
+          else META=Prerecorded_lives/input_METADATA.txt; fi
+          if [ "$CHAINE" = "ar" ]; then
+            if [ -z "$TOKEN_AR" ]; then
+              echo "::warning::Titre et description NON posés sur le direct : l'autorisation Google de la chaîne arabe manque (secret GOOGLE_REFRESH_TOKEN_AR). Le direct part avec le titre réglé dans YouTube Studio. Pour l'activer : workflow « Autorisation Google (une seule fois) » avec chaine = ar."
+              exit 0
+            fi
+            export GOOGLE_REFRESH_TOKEN="$TOKEN_AR" YOUTUBE_STREAM_ID="$STREAM_ID_AR" YOUTUBE_STREAM_KEY="$KEY_AR"
+          else
+            export GOOGLE_REFRESH_TOKEN="$TOKEN_FR" YOUTUBE_STREAM_ID="$STREAM_ID_FR" YOUTUBE_STREAM_KEY="$KEY_FR"
+          fi
+          METADATA_FILE="$META" node create_broadcast_custom.js
 
       - name: Diffuser les vidéos préenregistrées (sans boucle)
         env:
-          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
         run: |
+          if [ "$CHAINE" = "ar" ]; then export YOUTUBE_STREAM_KEY="$KEY_AR"; else export YOUTUBE_STREAM_KEY="$KEY_FR"; fi
+          YOUTUBE_STREAM_KEY=$(printf '%s' "$YOUTUBE_STREAM_KEY" | tr -d '[:space:]')
+          [ -n "$YOUTUBE_STREAM_KEY" ] || { echo "::error::Clé de flux absente pour la chaîne $CHAINE."; exit 1; }
           chmod +x push_prerecorded.sh
           ./push_prerecorded.sh
