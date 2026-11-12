@@ -20,6 +20,11 @@ on:
         type: choice
         options: ["fr — Le Journal du NON", "ar — Gulf think-tank"]
         default: "fr — Le Journal du NON"
+      visibilite:
+        description: "Visibilité du direct (non répertorié = pour un essai : seuls ceux qui ont le lien le voient)"
+        type: choice
+        options: [public, non répertorié, privé]
+        default: public
       format_faceless:
         description: "Résultat Faceless à diffuser (si les deux formats existent)"
         type: choice
@@ -149,7 +154,7 @@ jobs:
           else
             export GOOGLE_REFRESH_TOKEN="$TOKEN_FR" YOUTUBE_STREAM_ID="$STREAM_ID_FR" YOUTUBE_STREAM_KEY="$KEY_FR"
           fi
-          METADATA_FILE="$META" node create_broadcast_custom.js
+          PRIVACY="${{ inputs.visibilite == 'non répertorié' && 'unlisted' || inputs.visibilite == 'privé' && 'private' || 'public' }}" METADATA_FILE="$META" node create_broadcast_custom.js
 
       - name: Diffuser les vidéos préenregistrées (sans boucle)
         env:

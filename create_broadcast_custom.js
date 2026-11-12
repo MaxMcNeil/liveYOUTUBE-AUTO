@@ -146,7 +146,7 @@ async function main() {
         scheduledStartTime: new Date().toISOString(),
       },
       status: {
-        privacyStatus: 'public',
+        privacyStatus: ['public', 'unlisted', 'private'].includes(process.env.PRIVACY) ? process.env.PRIVACY : 'public',
         selfDeclaredMadeForKids: false,
       },
       contentDetails: {

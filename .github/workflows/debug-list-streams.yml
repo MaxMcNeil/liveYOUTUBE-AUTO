@@ -1,9 +1,16 @@
 name: Debug_List_YouTube_Streams
 
-# Outil de diagnostic ponctuel : liste les flux persistants YouTube du
-# compte pour identifier le bon YOUTUBE_STREAM_ID à utiliser.
+# Vérification SANS DIFFUSION (Actions → Debug_List_YouTube_Streams → Run workflow) : affiche la chaîne autorisée, ses
+# flux, et vérifie que la clé de flux du secret appartient bien à cette chaîne. Les clés ne sont jamais écrites en entier
+# dans le journal (dépôt public).
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      chaine:
+        description: "Chaîne à vérifier"
+        type: choice
+        options: ["fr — Le Journal du NON", "ar — Gulf think-tank"]
+        default: "ar — Gulf think-tank"
 
 jobs:
   list:
@@ -20,9 +27,19 @@ jobs:
       - name: Installer les dépendances
         run: npm install
 
-      - name: Lister les flux
+      - name: Vérifier la chaîne et sa clé de flux
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: node list_streams.js
+          TOKEN_FR: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TOKEN_AR: ${{ secrets.GOOGLE_REFRESH_TOKEN_AR }}
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: |
+          if [[ "${{ inputs.chaine }}" == ar* ]]; then
+            [ -n "$TOKEN_AR" ] || { echo "::error::Autorisation Google de la chaîne arabe absente (GOOGLE_REFRESH_TOKEN_AR)."; exit 1; }
+            export GOOGLE_REFRESH_TOKEN="$TOKEN_AR" YOUTUBE_STREAM_KEY="$KEY_AR"
+          else
+            export GOOGLE_REFRESH_TOKEN="$TOKEN_FR" YOUTUBE_STREAM_KEY="$KEY_FR"
+          fi
+          node list_streams.js

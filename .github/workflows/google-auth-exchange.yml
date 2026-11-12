@@ -59,4 +59,5 @@ jobs:
           echo "Secret enregistré : $NAME"
 
       - name: Confirmation
-        run: echo "Autorisation enregistrée (${{ inputs.chaine }}). Relancez le workflow 'Déployer le livestream' pour activer l'automatisation YouTube."
+        run: |
+          echo "Autorisation enregistrée (${{ inputs.chaine }}). Vérification sans diffusion possible : workflow Debug_List_YouTube_Streams."

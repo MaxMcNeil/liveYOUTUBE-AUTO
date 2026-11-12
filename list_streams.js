@@ -1,17 +1,20 @@
 /**
- * Liste tous les "liveStreams" (flux persistants) associés au compte
- * YouTube authentifié, avec leur ID et leur clé de stream — pour
- * identifier lequel correspond à YOUTUBE_STREAM_KEY et corriger le
- * secret YOUTUBE_STREAM_ID si besoin.
+ * Diagnostic SANS DIFFUSION : affiche la chaîne YouTube de l'autorisation utilisée, ses flux persistants, et vérifie
+ * que la clé de flux enregistrée en secret appartient bien à cette chaîne.
+ *
+ * SÉCURITÉ : ce dépôt est PUBLIC — n'importe qui peut lire les journaux des workflows. Une clé de flux permet de
+ * diffuser sur la chaîne : elle n'est donc JAMAIS écrite en entier dans le journal (4 premiers caractères seulement).
  */
 
 const { google } = require('googleapis');
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = process.env;
+const KEY = (process.env.YOUTUBE_STREAM_KEY || '').trim();
+const hide = (k) => (k ? `${String(k).slice(0, 4)}… (${String(k).length} caractères, masquée)` : '—');
 
 async function main() {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
-    console.error('Secrets Google manquants (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN).');
+    console.error('Secrets Google manquants (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / autorisation de la chaîne).');
     process.exit(1);
   }
 
@@ -19,28 +22,35 @@ async function main() {
   oauth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
   const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
-  const { data } = await youtube.liveStreams.list({
-    part: ['id', 'snippet', 'cdn', 'status'],
-    mine: true,
-    maxResults: 25,
-  });
+  const { data: me } = await youtube.channels.list({ part: ['snippet'], mine: true });
+  console.log(`Chaîne autorisée : « ${me.items?.[0]?.snippet?.title || 'aucune chaîne sur ce compte'} »\n`);
 
-  if (!data.items || data.items.length === 0) {
-    console.log('Aucun flux persistant trouvé sur ce compte.');
-    return;
-  }
+  const items = [];
+  let pageToken;
+  do {
+    const { data } = await youtube.liveStreams.list({ part: ['id', 'snippet', 'cdn', 'status'], mine: true, maxResults: 50, pageToken });
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken;
+  } while (pageToken && items.length < 500);
 
-  console.log(`${data.items.length} flux trouvé(s) :\n`);
-  for (const item of data.items) {
+  if (!items.length) console.log('Aucun flux persistant sur cette chaîne (YouTube Studio → Passer au direct → Flux).');
+  for (const item of items) {
+    const mine = KEY && item.cdn?.ingestionInfo?.streamName === KEY;
     console.log('----------------------------------------');
-    console.log('ID (à utiliser comme YOUTUBE_STREAM_ID) :', item.id);
-    console.log('Nom                                     :', item.snippet?.title);
-    console.log('Clé de stream (streamName)              :', item.cdn?.ingestionInfo?.streamName);
-    console.log('Statut                                  :', item.status?.streamStatus);
+    console.log('ID (YOUTUBE_STREAM_ID…)  :', item.id);
+    console.log('Nom                      :', item.snippet?.title);
+    console.log('Clé de flux              :', hide(item.cdn?.ingestionInfo?.streamName), mine ? '  ← C\'EST LA CLÉ DU SECRET' : '');
+    console.log('Statut                   :', item.status?.streamStatus);
   }
-  console.log('----------------------------------------');
-  console.log('\nComparez "Clé de stream" ci-dessus avec votre secret YOUTUBE_STREAM_KEY.');
-  console.log('Celui qui correspond → son "ID" est la bonne valeur pour le secret YOUTUBE_STREAM_ID.');
+  console.log('----------------------------------------\n');
+
+  if (!KEY) { console.log('Aucune clé de flux en secret pour cette chaîne : rien à comparer.'); return; }
+  const ok = items.some((x) => x.cdn?.ingestionInfo?.streamName === KEY);
+  if (ok) console.log('✅ La clé de flux du secret appartient bien à cette chaîne : le direct partira au bon endroit.');
+  else {
+    console.log("❌ La clé de flux du secret n'appartient à AUCUN flux de cette chaîne (clé d'une autre chaîne, ou régénérée dans YouTube Studio).");
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
