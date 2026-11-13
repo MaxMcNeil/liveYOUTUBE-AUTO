@@ -59,6 +59,20 @@ procédure d'upload — les gros fichiers ne passent pas par git).
 Déclenchement uniquement manuel : Actions → **"Prerecorded_Live_Now"**
 → **Run workflow**.
 
+**Résultat Faceless** : le direct diffuse toujours la version **verticale** (l'horizontale sert à la première YouTube).
+
+**Maintenant ou programmé** (champ `quand`) :
+- `maintenant` (défaut) : comme avant.
+- une date et une heure de **Paris** : `15/11 21h30`, `demain 21h`, `2026-11-15 21:30` — ajoute `Riyad` (ou `Golfe`,
+  `KSA`, `Doha`, `Koweït`) pour l'heure du Golfe, `Dubaï` pour l'heure des Émirats. L'annonce du direct (compte à rebours,
+  titre, description) apparaît tout de suite sur la chaîne ; les vidéos sont mises de côté dans la release
+  `programme-fr` / `programme-ar` (un nouveau montage Faceless ne les change pas) ; le direct part à l'heure dite.
+  Entre 5 min et 30 jours à l'avance. Une nouvelle programmation sur la même chaîne remplace la précédente.
+- `annuler` : supprime le direct programmé de la chaîne choisie (annonce comprise).
+Un direct « maintenant » lancé avant un direct programmé ne le supprime pas : l'annonce reste, et le direct programmé
+part à son heure. L'attente passe par des relais de 5 h 30 (limite GitHub de 6 h par tâche) : seul ce workflow se
+relance lui-même, pour son direct programmé — aucune autre exécution automatique.
+
 ## Playlist audio (musique + voix)
 
 Concerne uniquement **"Manual one-off live"** (pas les vidéos

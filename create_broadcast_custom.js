@@ -38,16 +38,36 @@ function parseMetadata(raw) {
   return { title, description };
 }
 
+async function cancelOnly(id) {
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) { console.log('Annonce non supprimée : autorisation Google absente pour cette chaîne.'); return; }
+  const oauth2Client = new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+  oauth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
+  const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+  const { data } = await youtube.liveBroadcasts.list({ part: ['id', 'status'], id: [id] });
+  const st = data.items?.[0]?.status?.lifeCycleStatus;
+  if (!st) { console.log(`Direct programmé ${id} déjà supprimé.`); return; }
+  if (!['created', 'ready'].includes(st)) { console.log(`Direct ${id} en état « ${st} » : pas supprimé (il a déjà commencé).`); return; }
+  await youtube.liveBroadcasts.delete({ id });
+  console.log(`Direct programmé ${id} supprimé de la chaîne.`);
+}
+
 async function main() {
-  if (!fs.existsSync(METADATA_PATH)) {
+  if (process.env.CANCEL_ID) return cancelOnly(process.env.CANCEL_ID.trim());
+  if (!fs.existsSync(METADATA_PATH) && !process.env.SCHEDULED_AT && !process.env.REUSE_ID) {
     console.log('Aucun input_METADATA.txt trouvé — titre/description YouTube par défaut conservés.');
     return;
   }
 
-  const raw = fs.readFileSync(METADATA_PATH, 'utf-8');
+  const raw = fs.existsSync(METADATA_PATH) ? fs.readFileSync(METADATA_PATH, 'utf-8') : '';
   const { title, description } = parseMetadata(raw);
 
-  if (!title) {
+  // direct PROGRAMMÉ (SCHEDULED_AT) ou reprise d'un direct programmé (REUSE_ID) : il faut un titre pour l'annonce
+  const SCHEDULED_AT = (process.env.SCHEDULED_AT || '').trim();
+  const REUSE_ID = (process.env.REUSE_ID || '').trim();
+  const PREV_ID = (process.env.PREV_ID || '').trim();
+  const ID_FILE = process.env.BROADCAST_ID_FILE || '';
+  const effectiveTitle = title || ((SCHEDULED_AT || REUSE_ID) ? (process.env.FALLBACK_TITLE || 'Live') : '');
+  if (!effectiveTitle) {
     console.log('Champ "Titre" vide — titre/description YouTube par défaut conservés.');
     return;
   }
@@ -101,15 +121,35 @@ async function main() {
   // 'upcoming' seul ne renverrait jamais — et c'est justement ce
   // broadcast bloqué qui reste bindé au flux et récupère le prochain
   // live à la place du nouveau.
+  // Programmer un direct : on ne touche à AUCUN autre direct (un direct en cours continue) ; seul l'ancien direct
+  // programmé de cette chaîne (PREV_ID) est supprimé, s'il n'a pas encore commencé.
+  if (SCHEDULED_AT) {
+    if (PREV_ID) {
+      try {
+        const { data: prev } = await youtube.liveBroadcasts.list({ part: ['id', 'status'], id: [PREV_ID] });
+        const st = prev.items?.[0]?.status?.lifeCycleStatus;
+        if (st && ['created', 'ready'].includes(st)) { await youtube.liveBroadcasts.delete({ id: PREV_ID }); console.log(`Ancien direct programmé ${PREV_ID} supprimé.`); }
+      } catch (e) { console.log('Ancien direct programmé non supprimé :', e.message); }
+    }
+  } else
   try {
     const { data: existing } = await youtube.liveBroadcasts.list({
-      part: ['id', 'contentDetails', 'status'],
+      part: ['id', 'contentDetails', 'status', 'snippet'],
       broadcastStatus: 'all',
     });
     for (const b of existing.items || []) {
       if (b.contentDetails?.boundStreamId !== YOUTUBE_STREAM_ID) continue;
+      if (REUSE_ID && b.id === REUSE_ID) continue;                       // le direct programmé qu'on va lancer
       const state = b.status?.lifeCycleStatus;
       if (state === 'complete' || state === 'revoked') continue;
+      // direct PROGRAMMÉ pour plus tard (annonce visible par le public) : jamais supprimé ; détaché du flux le temps de
+      // ce direct-ci, il sera rattaché à son heure par son propre run
+      const when = Date.parse(b.snippet?.scheduledStartTime || '');
+      if (['created', 'ready'].includes(state) && when > Date.now() + 20 * 60 * 1000) {
+        await youtube.liveBroadcasts.bind({ id: b.id, part: ['id'] }).then(() => console.log(`Direct programmé ${b.id} (${b.snippet?.scheduledStartTime}) gardé, détaché du flux le temps de ce direct.`))
+          .catch((e) => console.log(`Direct programmé ${b.id} non détaché :`, e.message));
+        continue;
+      }
 
       if (state === 'live' || state === 'testing') {
         console.log(`Ancien broadcast ${b.id} bloqué en '${state}' — transition vers 'complete'...`);
@@ -133,7 +173,21 @@ async function main() {
     console.log('Nettoyage des anciens broadcasts ignoré :', cleanupErr.message);
   }
 
-  const safeTitle = title.replace(/[<>]/g, '').slice(0, 100);
+  if (REUSE_ID) {
+    try {
+      const { data: r } = await youtube.liveBroadcasts.list({ part: ['id', 'status'], id: [REUSE_ID] });
+      const st = r.items?.[0]?.status?.lifeCycleStatus;
+      if (st && ['created', 'ready'].includes(st)) {
+        await youtube.liveBroadcasts.bind({ id: REUSE_ID, part: ['id'], streamId: YOUTUBE_STREAM_ID });
+        console.log(`Direct programmé ${REUSE_ID} rattaché au flux : il démarre avec la diffusion.`);
+        if (ID_FILE) fs.writeFileSync(ID_FILE, REUSE_ID);
+        return;
+      }
+      console.log(`Direct programmé ${REUSE_ID} introuvable ou déjà terminé (${st || 'supprimé'}) : un nouveau direct est créé.`);
+    } catch (e) { console.log('Direct programmé non relu :', e.message, '— un nouveau direct est créé.'); }
+  }
+
+  const safeTitle = effectiveTitle.replace(/[<>]/g, '').slice(0, 100);
   const safeDescription = description.replace(/[<>]/g, '').slice(0, 4900);
   console.log(`Création du broadcast : "${safeTitle}"`);
 
@@ -143,7 +197,7 @@ async function main() {
       snippet: {
         title: safeTitle,
         description: safeDescription,
-        scheduledStartTime: new Date().toISOString(),
+        scheduledStartTime: SCHEDULED_AT || new Date().toISOString(),
       },
       status: {
         privacyStatus: ['public', 'unlisted', 'private'].includes(process.env.PRIVACY) ? process.env.PRIVACY : 'public',
@@ -167,6 +221,7 @@ async function main() {
   });
 
   console.log(`Broadcast ${broadcast.id} lié au flux persistant ${YOUTUBE_STREAM_ID}.`);
+  if (ID_FILE) fs.writeFileSync(ID_FILE, broadcast.id);
 }
 
 main().catch((err) => {

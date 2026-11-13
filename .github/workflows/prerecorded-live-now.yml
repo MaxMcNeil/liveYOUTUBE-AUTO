@@ -1,12 +1,15 @@
 name: Prerecorded_Live_Now
 
-# Déclenché manuellement (Actions > Prerecorded_Live_Now > Run workflow), au moment où vous voulez passer des vidéos
-# en direct. Pas de planification automatique — c'est vous qui choisissez l'instant T.
-#   source  = release « prerecorded-lives » de ce dépôt (comme avant), OU le dernier résultat du workflow
-#             « Faceless live arabic » de Push-overlay (release out-explainer) : vous regardez d'abord la vidéo là-bas,
-#             puis vous lancez le direct ici.
-#   chaine  = fr (Le Journal du NON, comme avant) ou ar (Gulf think-tank, secret YOUTUBE_STREAM_KEY_AR).
-# Sans rien changer aux champs, le comportement est exactement celui d'avant.
+# Lancement MANUEL (Actions > Prerecorded_Live_Now > Run workflow). Aucune planification automatique.
+#   source  = release « prerecorded-lives » de ce dépôt, OU le dernier résultat « Faceless live arabic » de Push-overlay
+#             (release out-explainer) — toujours la version VERTICALE : tu regardes la vidéo là-bas, puis tu lances ici.
+#   chaine  = fr (Le Journal du NON) ou ar (Gulf think-tank, secret YOUTUBE_STREAM_KEY_AR).
+#   quand   = « maintenant » (défaut, comme avant) OU une date et une heure : le direct est PROGRAMMÉ — l'annonce
+#             (compte à rebours) apparaît tout de suite sur la chaîne, les vidéos sont mises de côté (release
+#             « programme-fr » / « programme-ar », à l'abri d'un nouveau montage Faceless) et le direct part à l'heure dite.
+#             « annuler » supprime le direct programmé. Un nouveau direct programmé sur la même chaîne remplace le précédent.
+#             L'attente se fait par relais de 5 h 40 (limite GitHub de 6 h par tâche) : seul ce workflow se relance
+#             lui-même pour SON direct programmé, aucune autre exécution automatique.
 on:
   workflow_dispatch:
     inputs:
@@ -25,23 +28,53 @@ on:
         type: choice
         options: [public, non répertorié, privé]
         default: public
-      format_faceless:
-        description: "Résultat Faceless à diffuser (si les deux formats existent)"
-        type: choice
-        options: [vertical, horizontal]
-        default: vertical
+      quand:
+        description: "Quand ? « maintenant », ou date et heure de PARIS : « 15/11 21h30 », « demain 21h », « 2026-11-15 21:30 » (ajoute « Riyad » pour l'heure du Golfe) ; « annuler » = supprimer le direct programmé"
+        required: false
+        default: "maintenant"
+      programme:
+        description: "(interne — laisser VIDE) relais d'un direct programmé"
+        required: false
+        default: ""
 
-concurrency:
-  # un seul direct à la fois par chaîne : un 2e lancement attend la fin du premier au lieu de se battre pour la même clé
-  group: live-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
-  cancel-in-progress: false
+permissions:
+  contents: write
+  actions: write
+
+env:
+  CHAINE: ${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+  PRIVACY: ${{ inputs.visibilite == 'non répertorié' && 'unlisted' || inputs.visibilite == 'privé' && 'private' || 'public' }}
 
 jobs:
-  stream:
+  # ------------------------------------------------------------------ 0) maintenant, plus tard, ou annuler ?
+  quand:
+    if: inputs.programme == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.q.outputs.mode }}
+      at: ${{ steps.q.outputs.at }}
+      at_iso: ${{ steps.q.outputs.at_iso }}
+      affiche: ${{ steps.q.outputs.affiche }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: q
+        env:
+          QUAND: ${{ inputs.quand }}
+        run: |
+          bash quand.sh
+          { echo "### Direct — chaîne $CHAINE"; grep -E '^(mode|affiche)=' "$GITHUB_OUTPUT" | sed 's/^/- /'; } >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------ 1) direct IMMÉDIAT (comportement d'avant)
+  direct:
+    needs: quand
+    if: needs.quand.outputs.mode == 'maintenant'
     runs-on: ubuntu-latest
     timeout-minutes: 360   # limite haute, la durée réelle dépend de vos vidéos
-    env:
-      CHAINE: ${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+    concurrency:
+      # un seul direct à la fois par chaîne : un 2e lancement attend la fin du premier au lieu de se battre pour la même clé
+      group: live-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,15 +88,7 @@ jobs:
         env:
           KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
           KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
-        run: |
-          KEY_FR=$(printf '%s' "$KEY_FR" | tr -d '[:space:]'); KEY_AR=$(printf '%s' "$KEY_AR" | tr -d '[:space:]')
-          if [ "$CHAINE" = "ar" ]; then
-            [ -n "$KEY_AR" ] || { echo "::error::Chaîne arabe choisie mais le secret YOUTUBE_STREAM_KEY_AR n'existe pas. Termux : gh secret set YOUTUBE_STREAM_KEY_AR --repo ${{ github.repository }} (clé : YouTube Studio de Gulf think-tank → Passer au direct → Flux)."; exit 1; }
-            [ "$KEY_AR" != "$KEY_FR" ] || { echo "::error::YOUTUBE_STREAM_KEY_AR est identique à la clé française : le direct partirait sur Le Journal du NON. Mets la clé de la chaîne Gulf think-tank."; exit 1; }
-          else
-            [ -n "$KEY_FR" ] || { echo "::error::Secret YOUTUBE_STREAM_KEY manquant."; exit 1; }
-          fi
-          echo "Chaîne : $CHAINE — clé de flux présente."
+        run: bash verifier_cle.sh
 
       - name: Installer les dépendances
         run: |
@@ -74,61 +99,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE: ${{ inputs.source }}
-          WANT: ${{ inputs.format_faceless }}
-        run: |
-          set -euo pipefail
-          mkdir -p Prerecorded_lives
-          find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" -delete
-          if [[ "$SOURCE" == *Faceless* ]]; then
-            REPO="${{ github.repository_owner }}/Push-overlay"
-            names=$(gh release view out-explainer --repo "$REPO" --json assets -q '.assets[].name' 2>/dev/null || true)
-            [ -n "$names" ] || { echo "::error::Aucun résultat Faceless trouvé (release out-explainer de $REPO). Lance d'abord « Faceless live arabic » et vérifie la vidéo."; exit 1; }
-            other=$([ "$WANT" = "vertical" ] && echo horizontal || echo vertical)
-            f=$(grep -E "^explainer-$WANT-.*\.mp4$" <<<"$names" | sort | tail -n1 || true)
-            if [ -z "$f" ]; then f=$(grep -E "^explainer-$other-.*\.mp4$" <<<"$names" | sort | tail -n1 || true); [ -n "$f" ] && echo "::warning::Pas de version $WANT dans le dernier résultat : diffusion de la version $other."; fi
-            [ -n "$f" ] || { echo "::error::La release out-explainer ne contient aucune vidéo explainer-*.mp4."; exit 1; }
-            echo "Résultat Faceless diffusé : $f"
-            # garde-fous contre « la mauvaise vidéo part en direct » : résultat ancien, ou montage Faceless encore en cours
-            pub=$(gh release view out-explainer --repo "$REPO" --json publishedAt -q .publishedAt 2>/dev/null || true)
-            if [ -n "$pub" ]; then
-              age=$(( ( $(date -u +%s) - $(date -u -d "$pub" +%s) ) / 3600 ))
-              echo "Résultat publié le $pub (il y a ${age} h)."
-              [ "$age" -lt 48 ] || echo "::warning::Ce résultat Faceless date de plus de 2 jours : vérifie que c'est bien la vidéo voulue."
-            fi
-            busy=$(gh api "repos/$REPO/actions/workflows/faceless-live-arabic.yml/runs?per_page=5" -q '[.workflow_runs[]|select(.status!="completed")]|length' 2>/dev/null || echo 0)
-            [ "$busy" = "0" ] || echo "::warning::Un montage Faceless est en cours dans Push-overlay : la vidéo diffusée est celle du résultat PRÉCÉDENT ($f)."
-            gh release download out-explainer --repo "$REPO" --pattern "$f" --dir Prerecorded_lives --clobber
-            # fiche YouTube écrite par Faceless (titre, description, tags, hashtags) : posée telle quelle sur le direct
-            rm -f Prerecorded_lives/input_METADATA_faceless.txt
-            if grep -qx "youtube-metadata.txt" <<<"$names"; then
-              gh release download out-explainer --repo "$REPO" --pattern "youtube-metadata.txt" --dir /tmp/ytmeta --clobber \
-                && mv /tmp/ytmeta/youtube-metadata.txt Prerecorded_lives/input_METADATA_faceless.txt \
-                && echo "Titre du direct : $(grep -m1 -i '^Titre' Prerecorded_lives/input_METADATA_faceless.txt | cut -c1-120)"
-            else echo "::warning::Pas de fiche YouTube dans le résultat Faceless : titre habituel conservé."; fi
-          else
-            gh release download prerecorded-lives \
-              --repo "${{ github.repository }}" \
-              --dir Prerecorded_lives \
-              --clobber \
-              --pattern "*" || {
-                echo "::error::Aucune release nommée 'prerecorded-lives' trouvée, ou aucune vidéo attachée. Voir Prerecorded_lives/README.md."
-                exit 1
-              }
-          fi
-          # chaque fichier doit être une vidéo lisible AVEC du son (sinon le direct s'arrêterait en plein milieu)
-          n=0
-          while IFS= read -r v; do
-            ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$v" | grep -q video || { echo "::error::Fichier illisible ou sans image : $(basename "$v")"; exit 1; }
-            ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$v" | grep -q audio || { echo "::error::Vidéo sans son : $(basename "$v")"; exit 1; }
-            n=$((n + 1))
-          done < <(find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" ! -iname ".*" | sort)
-          [ "$n" -ge 1 ] || { echo "::error::Aucune vidéo à diffuser."; exit 1; }
-          echo "$n vidéo(s) prête(s)."
+          OWNER: ${{ github.repository_owner }}
+          THIS_REPO: ${{ github.repository }}
+        run: bash fetch_live_videos.sh
 
-      # Titre/description : chaîne française = comme avant (input_METADATA.txt + secrets Google habituels).
-      # Chaîne arabe = seulement si ses propres secrets existent (GOOGLE_REFRESH_TOKEN_AR, YOUTUBE_STREAM_ID_AR) et si
-      # Prerecorded_lives/input_METADATA_ar.txt a un « Titre » ; sinon le direct garde le titre réglé dans YouTube Studio.
-      # Jamais le titre français sur la chaîne arabe.
       - name: Titre et description du direct
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -139,30 +113,232 @@ jobs:
           STREAM_ID_AR: ${{ secrets.YOUTUBE_STREAM_ID_AR }}
           KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
           KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
-        run: |
-          # Fiche utilisée : celle de Faceless si la source est Faceless, sinon le fichier habituel de la chaîne.
-          # Chaque chaîne n'utilise QUE ses propres identifiants (aucun repli de l'arabe vers le français).
-          if [ -s Prerecorded_lives/input_METADATA_faceless.txt ]; then META=Prerecorded_lives/input_METADATA_faceless.txt
-          elif [ "$CHAINE" = "ar" ]; then META=Prerecorded_lives/input_METADATA_ar.txt
-          else META=Prerecorded_lives/input_METADATA.txt; fi
-          if [ "$CHAINE" = "ar" ]; then
-            if [ -z "$TOKEN_AR" ]; then
-              echo "::warning::Titre et description NON posés sur le direct : l'autorisation Google de la chaîne arabe manque (secret GOOGLE_REFRESH_TOKEN_AR). Le direct part avec le titre réglé dans YouTube Studio. Pour l'activer : workflow « Autorisation Google (une seule fois) » avec chaine = ar."
-              exit 0
-            fi
-            export GOOGLE_REFRESH_TOKEN="$TOKEN_AR" YOUTUBE_STREAM_ID="$STREAM_ID_AR" YOUTUBE_STREAM_KEY="$KEY_AR"
-          else
-            export GOOGLE_REFRESH_TOKEN="$TOKEN_FR" YOUTUBE_STREAM_ID="$STREAM_ID_FR" YOUTUBE_STREAM_KEY="$KEY_FR"
-          fi
-          PRIVACY="${{ inputs.visibilite == 'non répertorié' && 'unlisted' || inputs.visibilite == 'privé' && 'private' || 'public' }}" METADATA_FILE="$META" node create_broadcast_custom.js
+        run: bash titre_direct.sh
 
       - name: Diffuser les vidéos préenregistrées (sans boucle)
         env:
           KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
           KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: bash diffuser.sh
+
+  # ------------------------------------------------------------------ 2) PROGRAMMER (ou annuler) un direct
+  programmer:
+    needs: quand
+    if: needs.quand.outputs.mode == 'programme' || needs.quand.outputs.mode == 'annuler'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Vérifier la clé de flux de la chaîne choisie
+        if: needs.quand.outputs.mode == 'programme'
+        env:
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: bash verifier_cle.sh
+
+      - name: Installer les dépendances
         run: |
-          if [ "$CHAINE" = "ar" ]; then export YOUTUBE_STREAM_KEY="$KEY_AR"; else export YOUTUBE_STREAM_KEY="$KEY_FR"; fi
-          YOUTUBE_STREAM_KEY=$(printf '%s' "$YOUTUBE_STREAM_KEY" | tr -d '[:space:]')
-          [ -n "$YOUTUBE_STREAM_KEY" ] || { echo "::error::Clé de flux absente pour la chaîne $CHAINE."; exit 1; }
-          chmod +x push_prerecorded.sh
-          ./push_prerecorded.sh
+          npm install
+          command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
+
+      - name: Ancien direct programmé de cette chaîne
+        id: prev
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf /tmp/prev && mkdir -p /tmp/prev
+          if gh release download "programme-$CHAINE" --repo "${{ github.repository }}" --pattern config.json --dir /tmp/prev 2>/dev/null; then
+            echo "broadcast=$(node -e 'try{console.log(require("/tmp/prev/config.json").broadcast||"")}catch{console.log("")}')" >> "$GITHUB_OUTPUT"
+            echo "Direct déjà programmé sur cette chaîne : $(node -e 'try{console.log(require("/tmp/prev/config.json").affiche)}catch{}')"
+          else echo "Aucun direct programmé sur cette chaîne."; fi
+
+      - name: Annuler
+        if: needs.quand.outputs.mode == 'annuler'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          TOKEN_FR: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TOKEN_AR: ${{ secrets.GOOGLE_REFRESH_TOKEN_AR }}
+          CANCEL_ID: ${{ steps.prev.outputs.broadcast }}
+        run: |
+          [ -n "$CANCEL_ID" ] && bash titre_direct.sh || true
+          gh release delete "programme-$CHAINE" --repo "${{ github.repository }}" -y --cleanup-tag 2>/dev/null && echo "Direct programmé annulé (chaîne $CHAINE)." || echo "Aucun direct programmé à annuler (chaîne $CHAINE)."
+          echo "### ❌ Direct programmé annulé (chaîne $CHAINE)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Télécharger et vérifier les vidéos (elles sont mises de côté jusqu'à l'heure du direct)
+        if: needs.quand.outputs.mode == 'programme'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE: ${{ inputs.source }}
+          OWNER: ${{ github.repository_owner }}
+          THIS_REPO: ${{ github.repository }}
+        run: bash fetch_live_videos.sh
+
+      - name: Annonce du direct sur la chaîne (compte à rebours, titre, description)
+        if: needs.quand.outputs.mode == 'programme'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          TOKEN_FR: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TOKEN_AR: ${{ secrets.GOOGLE_REFRESH_TOKEN_AR }}
+          STREAM_ID_FR: ${{ secrets.YOUTUBE_STREAM_ID }}
+          STREAM_ID_AR: ${{ secrets.YOUTUBE_STREAM_ID_AR }}
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+          SCHEDULED_AT: ${{ needs.quand.outputs.at_iso }}
+          PREV_ID: ${{ steps.prev.outputs.broadcast }}
+          BROADCAST_ID_FILE: /tmp/broadcast_id
+        run: |
+          rm -f /tmp/broadcast_id
+          bash titre_direct.sh
+          [ -s /tmp/broadcast_id ] && echo "Annonce créée : https://www.youtube.com/watch?v=$(cat /tmp/broadcast_id)" || echo "::warning::Pas d'annonce sur la chaîne (autorisation Google absente) : le direct partira quand même à l'heure."
+
+      - name: Mettre les vidéos de côté (release programme-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }})
+        if: needs.quand.outputs.mode == 'programme'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AT: ${{ needs.quand.outputs.at }}
+          AFFICHE: ${{ needs.quand.outputs.affiche }}
+          SOURCE: ${{ inputs.source }}
+        run: |
+          set -euo pipefail
+          DUR=0
+          while IFS= read -r v; do d=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$v" | cut -d. -f1); DUR=$((DUR + ${d:-0})); done \
+            < <(find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" ! -iname ".*" | sort)
+          [ "$DUR" -le 20400 ] || { echo "::error::Vidéos de $((DUR / 60)) min : plus de 5 h 40, trop long pour un direct GitHub."; exit 1; }
+          BID=$(cat /tmp/broadcast_id 2>/dev/null || true)
+          node -e 'const fs=require("fs");fs.writeFileSync("config.json",JSON.stringify({at:+process.env.AT,affiche:process.env.AFFICHE,chaine:process.env.CHAINE,privacy:process.env.PRIVACY,broadcast:process.argv[1],duree_s:+process.argv[2],source:process.env.SOURCE,programme_le:new Date().toISOString()},null,1))' "$BID" "$DUR"
+          FILES=(config.json)
+          while IFS= read -r v; do FILES+=("$v"); done < <(find Prerecorded_lives -maxdepth 1 -type f ! -iname "README*" ! -iname ".*" ! -iname "input_METADATA.txt" ! -iname "input_METADATA_ar.txt" | sort)
+          gh release delete "programme-$CHAINE" --repo "${{ github.repository }}" -y --cleanup-tag >/dev/null 2>&1 || true
+          for i in 1 2 3; do
+            gh release create "programme-$CHAINE" --repo "${{ github.repository }}" --prerelease --target "${{ github.sha }}" \
+              --title "⏰ Direct programmé ($CHAINE) — $AFFICHE" \
+              --notes "Vidéos mises de côté pour le direct du $AFFICHE (chaîne $CHAINE). Pour annuler : Prerecorded_Live_Now avec quand = annuler." \
+              "${FILES[@]}" && break
+            sleep $((i * 10)); gh release delete "programme-$CHAINE" --repo "${{ github.repository }}" -y --cleanup-tag >/dev/null 2>&1 || true
+          done
+          gh release view "programme-$CHAINE" --repo "${{ github.repository }}" >/dev/null || { echo "::error::Vidéos non mises de côté : programmation impossible."; exit 1; }
+          echo "### ⏰ Direct programmé : $AFFICHE (chaîne $CHAINE, $((DUR / 60)) min de vidéo)" >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------ 3) ATTENTE jusqu'à l'heure (relais si > 5 h 40)
+  attente:
+    needs: [quand, programmer]
+    if: always() && (inputs.programme != '' || (needs.programmer.result == 'success' && needs.quand.outputs.mode == 'programme') || (needs.programmer.result == 'success' && needs.quand.outputs.mode == 'annuler'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    concurrency:
+      # un seul direct programmé par chaîne : une nouvelle programmation (ou « annuler ») arrête l'attente précédente
+      group: programme-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+      cancel-in-progress: true
+    outputs:
+      go: ${{ steps.w.outputs.go }}
+    steps:
+      - id: w
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ needs.quand.outputs.mode }}
+        run: |
+          set -euo pipefail
+          # « go=true » n'est écrit qu'à la toute fin, à l'heure du direct : tout autre cas = pas de diffusion
+          [ "${MODE:-}" != "annuler" ] || { echo "Annulation : attente précédente arrêtée."; exit 0; }
+          cfg() { rm -rf /tmp/c && mkdir -p /tmp/c && gh release download "programme-$CHAINE" --repo "${{ github.repository }}" --pattern config.json --dir /tmp/c >/dev/null 2>&1 && cat /tmp/c/config.json; }
+          C=$(cfg) || { echo "::warning::Aucun direct programmé sur la chaîne $CHAINE (annulé ?) : rien à faire."; exit 0; }
+          AT=$(node -e 'console.log(JSON.parse(process.argv[1]).at)' "$C"); BID=$(node -e 'console.log(JSON.parse(process.argv[1]).broadcast||"")' "$C")
+          AFF=$(node -e 'console.log(JSON.parse(process.argv[1]).affiche)' "$C")
+          LEFT=$(( AT - $(date +%s) ))
+          echo "Direct programmé : $AFF — dans $((LEFT / 60)) min."
+          if [ "$LEFT" -gt $((340 * 60)) ]; then
+            echo "Plus de 5 h 40 d'attente : relais dans 5 h 30."
+            sleep $((330 * 60))
+            C2=$(cfg) || { echo "Direct annulé pendant l'attente."; exit 0; }
+            [ "$(node -e 'console.log(JSON.parse(process.argv[1]).at)' "$C2")" = "$AT" ] || { echo "Direct reprogrammé entre-temps : ce relais s'arrête."; exit 0; }
+            gh workflow run prerecorded-live-now.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" \
+              -f source="${{ inputs.source }}" -f chaine="${{ inputs.chaine }}" -f visibilite="${{ inputs.visibilite }}" -f quand=maintenant -f programme="programme-$CHAINE"
+            echo "Relais lancé."
+            exit 0
+          fi
+          W=$(( LEFT - 180 )); [ "$W" -gt 0 ] && { echo "Attente de $((W / 60)) min…"; sleep "$W"; }
+          C3=$(cfg) || { echo "Direct annulé pendant l'attente."; exit 0; }
+          [ "$(node -e 'console.log(JSON.parse(process.argv[1]).at)' "$C3")" = "$AT" ] || { echo "Direct reprogrammé entre-temps : cette attente s'arrête."; exit 0; }
+          echo "go=true" >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------------------------ 4) DIFFUSION du direct programmé, à l'heure
+  diffusion:
+    needs: attente
+    if: needs.attente.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    concurrency:
+      group: live-${{ startsWith(inputs.chaine, 'ar') && 'ar' || 'fr' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Vérifier la clé de flux
+        env:
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+        run: bash verifier_cle.sh
+
+      - name: Installer les dépendances
+        run: |
+          npm install
+          command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
+
+      - name: Reprendre les vidéos mises de côté
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p Prerecorded_lives
+          find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA.txt" ! -iname "input_METADATA_ar.txt" ! -iname "README*" -delete
+          gh release download "programme-$CHAINE" --repo "${{ github.repository }}" --dir Prerecorded_lives --clobber
+          mv Prerecorded_lives/config.json /tmp/config.json
+          echo "at=$(node -e 'console.log(require("/tmp/config.json").at)')" >> "$GITHUB_OUTPUT"
+          echo "broadcast=$(node -e 'console.log(require("/tmp/config.json").broadcast||"")')" >> "$GITHUB_OUTPUT"
+          n=0
+          while IFS= read -r v; do
+            ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$v" | grep -q video || { echo "::error::Fichier illisible : $(basename "$v")"; exit 1; }
+            n=$((n + 1))
+          done < <(find Prerecorded_lives -maxdepth 1 -type f ! -iname "input_METADATA*" ! -iname "README*" ! -iname ".*" | sort)
+          [ "$n" -ge 1 ] || { echo "::error::Aucune vidéo mise de côté."; exit 1; }
+          echo "$n vidéo(s) prête(s)."
+
+      - name: Rattacher l'annonce au flux (ou créer le direct si l'annonce a disparu)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          TOKEN_FR: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TOKEN_AR: ${{ secrets.GOOGLE_REFRESH_TOKEN_AR }}
+          STREAM_ID_FR: ${{ secrets.YOUTUBE_STREAM_ID }}
+          STREAM_ID_AR: ${{ secrets.YOUTUBE_STREAM_ID_AR }}
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+          REUSE_ID: ${{ steps.v.outputs.broadcast }}
+        run: bash titre_direct.sh
+
+      - name: Diffuser à l'heure programmée
+        env:
+          KEY_FR: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          KEY_AR: ${{ secrets.YOUTUBE_STREAM_KEY_AR }}
+          AT: ${{ steps.v.outputs.at }}
+        run: |
+          W=$(( AT - 10 - $(date +%s) )); [ "$W" -gt 0 ] && { echo "Départ dans $W s…"; sleep "$W"; }
+          late=$(( $(date +%s) - AT )); [ "$late" -gt 120 ] && echo "::warning::Direct parti avec $((late / 60)) min de retard (un autre direct occupait la chaîne, ou file d'attente GitHub)."
+          bash diffuser.sh
+
+      - name: Libérer la release du direct programmé
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete "programme-$CHAINE" --repo "${{ github.repository }}" -y --cleanup-tag || true
