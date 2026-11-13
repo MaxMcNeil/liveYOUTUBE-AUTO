@@ -29,7 +29,7 @@ on:
         options: [public, non répertorié, privé]
         default: public
       quand:
-        description: "Quand ? « maintenant », ou date et heure de PARIS : « 15/11 21h30 », « demain 21h », « 2026-11-15 21:30 » (ajoute « Riyad » pour l'heure du Golfe) ; « annuler » = supprimer le direct programmé"
+        description: "Quand ? « maintenant », ou date et heure (ton heure locale) : « 15/11 21h30 », « demain 21h », « 2026-11-15 21:30 » ; « annuler » = supprimer le direct programmé"
         required: false
         default: "maintenant"
       programme:

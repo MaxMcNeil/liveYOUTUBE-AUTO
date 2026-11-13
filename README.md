@@ -63,8 +63,7 @@ Déclenchement uniquement manuel : Actions → **"Prerecorded_Live_Now"**
 
 **Maintenant ou programmé** (champ `quand`) :
 - `maintenant` (défaut) : comme avant.
-- une date et une heure de **Paris** : `15/11 21h30`, `demain 21h`, `2026-11-15 21:30` — ajoute `Riyad` (ou `Golfe`,
-  `KSA`, `Doha`, `Koweït`) pour l'heure du Golfe, `Dubaï` pour l'heure des Émirats. L'annonce du direct (compte à rebours,
+- une date et une heure, dans **ton heure locale** : `15/11 21h30`, `demain 21h`, `2026-11-15 21:30`. L'annonce du direct (compte à rebours,
   titre, description) apparaît tout de suite sur la chaîne ; les vidéos sont mises de côté dans la release
   `programme-fr` / `programme-ar` (un nouveau montage Faceless ne les change pas) ; le direct part à l'heure dite.
   Entre 5 min et 30 jours à l'avance. Une nouvelle programmation sur la même chaîne remplace la précédente.
